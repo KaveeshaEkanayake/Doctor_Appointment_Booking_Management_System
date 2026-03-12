@@ -2,6 +2,22 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
 
+// Validate JWT_SECRET at startup — fails early with a clear message
+// Similar to DATABASE_URL check in prisma.js
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    "JWT_SECRET environment variable is not set. Please configure JWT_SECRET before starting the application."
+  );
+}
+
+// Shared constant to avoid duplicating the invalid credentials response
+// Both "user not found" and "wrong password" return the same message
+// This is intentional — we don't reveal which field is wrong (security)
+const INVALID_CREDENTIALS_RESPONSE = {
+  success: false,
+  message: "Invalid credentials. Please check your email and password.",
+};
+
 export const registerPatient = async (req, res) => {
   const { firstName, lastName, email, password, phone } = req.body;
 
@@ -58,39 +74,30 @@ export const loginPatient = async (req, res) => {
       where: { email },
     });
 
-    // Step 2: If no patient found, return error
-    // We say "Invalid credentials" instead of "Email not found"
-    // for security — don't reveal which field is wrong
+    // Step 2: If no patient found, return shared error constant
     if (!patient) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials. Please check your email and password.",
-      });
+      return res.status(401).json(INVALID_CREDENTIALS_RESPONSE);
     }
 
     // Step 3: Compare entered password with hashed password in database
     const isPasswordCorrect = await bcrypt.compare(password, patient.password);
 
+    // Step 4: If password wrong, return same shared error constant
     if (!isPasswordCorrect) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials. Please check your email and password.",
-      });
+      return res.status(401).json(INVALID_CREDENTIALS_RESPONSE);
     }
 
-    // Step 4: Generate JWT token
-    // This token is sent to the frontend and stored there
-    // It proves the patient is logged in on future requests
+    // Step 5: Generate JWT token
     const token = jwt.sign(
       {
         id: patient.id,
         email: patient.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" } // token expires in 7 days (handles session persist)
+      { expiresIn: "7d" }
     );
 
-    // Step 5: Return success with token and patient info
+    // Step 6: Return success with token and patient info
     return res.status(200).json({
       success: true,
       message: "Login successful",
