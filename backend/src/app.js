@@ -1,12 +1,12 @@
 import express from "express";
-import patientRoutes from "./routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
 // Allows app to read JSON from request body
 app.use(express.json());
 
-// All patient routes live under /api/patients
-app.use("/api/auth", patientRoutes);
+// All auth routes live under /api/auth
+app.use("/api/auth", authRoutes);
 
 export default app;

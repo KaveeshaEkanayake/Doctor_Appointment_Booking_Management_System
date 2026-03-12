@@ -30,7 +30,7 @@ const registerValidation = [
     .withMessage("Phone number is required"),
 ];
 
-// POST /api/patients/register
+// POST /api/auth/register
 // 1. Run validation → 2. Check errors → 3. Run controller
 router.post("/register", registerValidation, validate, registerPatient);
 
