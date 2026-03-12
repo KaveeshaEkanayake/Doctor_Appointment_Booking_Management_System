@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { registerPatient } from "../controllers/patient.controller.js";
+import { registerPatient, loginPatient } from "../controllers/patient.controller.js";
 import validate from "../middlewares/validate.middleware.js";
 
 const router = Router();
@@ -30,8 +30,21 @@ const registerValidation = [
     .withMessage("Phone number is required"),
 ];
 
+// Validation rules for login
+const loginValidation = [
+  body("email")
+    .isEmail()
+    .withMessage("Please provide a valid email"),
+
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required"),
+];
+
 // POST /api/auth/register
-// 1. Run validation → 2. Check errors → 3. Run controller
 router.post("/register", registerValidation, validate, registerPatient);
+
+// POST /api/auth/login
+router.post("/login", loginValidation, validate, loginPatient);
 
 export default router;
