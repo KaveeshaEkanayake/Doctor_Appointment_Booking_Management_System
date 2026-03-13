@@ -7,6 +7,7 @@ on:
       - production
     paths:
       - 'backend/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   test-and-deploy:
@@ -27,7 +28,6 @@ jobs:
         working-directory: backend
         run: npm install
 
-      # Generate Prisma client before running tests
       - name: Generate Prisma client
         working-directory: backend
         run: npx prisma generate
