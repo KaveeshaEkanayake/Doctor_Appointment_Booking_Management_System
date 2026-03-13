@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import headerImg from "../assets/LoginImg.png";
-import logoImg from "../assets/Logo04.PNG"; // optional
+import logoImg from "../assets/Logo04.PNG";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -10,31 +10,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const navigate = useNavigate();
-  
-
-
-  // Check for existing token on page load (session persistence)
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (token) {
-  //     axios
-  //       .get("http://localhost:5000/verify", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       })
-  //       .then(() => navigate("/dashboard"))
-  //       .catch(() => localStorage.removeItem("token"));
-  //   }
-  // }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("${import.meta.env.VITE_API_URL}/api/auth/login", {
+      // ✅ Fixed: backticks for env variable
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         email,
         password,
       });
       localStorage.setItem("token", res.data.token);
-      navigate("/dashboard"); // redirect after login
+      navigate("/dashboard");
     } catch (err) {
       setStatusMessage("Invalid credentials");
     }
@@ -42,25 +28,21 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen bg-[#F6FAFF]">
-      {/* Left side with image, logo, and overlay buttons */}
+      {/* Left side with image and logo */}
       <div className="hidden md:flex w-2/4 mt-[160px]">
-        <div className=" flex h-full bg-blue-50">
-            {/* Logo */}
-            <div className="absolute top-14 left-60 flex items-center space-x-2">
-              <img src={logoImg} alt="MediCare Logo" className="h-16" />
-              {/* <span className="text-2xl font-bold text-blue-700">MediCare</span> */}
-            </div>
+        <div className="flex h-full bg-blue-50">
+          <div className="absolute top-14 left-60 flex items-center space-x-2">
+            <img src={logoImg} alt="MediCare Logo" className="h-16" />
+          </div>
         </div>
 
-        <div className="absolute top-100 left-0 hidden md:flex w-[900px] h-[580px] ">
-        {/* Background image */}
-        <img
+        <div className="absolute top-100 left-0 hidden md:flex w-[900px] h-[580px]">
+          <img
             src={headerImg}
             alt="Doctors"
-            className="w-[1600px] h-auto "
-        />
+            className="w-[1600px] h-auto"
+          />
         </div>
-
       </div>
 
       {/* Right side login form */}
@@ -68,7 +50,7 @@ export default function LoginPage() {
 
         <h2 className="mt-6 text-4xl font-bold mb-2 text-black-700">Welcome back</h2>
         <p className="mb-6 text-[#878787]">
-          Already haven’t an account?{" "}
+          Already haven't an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
             Sign up
           </Link>
@@ -76,12 +58,16 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleLogin}
-          className="w-full max-w-md space-y-4 bg-white p-6 rounded-lg "
+          className="w-full max-w-md space-y-4 bg-white p-6 rounded-lg"
         >
           {/* Email field */}
           <div>
-            <label className="block mb-2 text-gray-700">Email Address</label>
+            {/* ✅ Fixed: htmlFor connects label to input */}
+            <label htmlFor="email" className="block mb-2 text-gray-700">
+              Email Address
+            </label>
             <input
+              id="email"
               type="email"
               placeholder="Email address"
               value={email}
@@ -92,8 +78,12 @@ export default function LoginPage() {
 
           {/* Password field */}
           <div>
-            <label className="block mb-2 text-gray-700">Your Password</label>
+            {/* ✅ Fixed: htmlFor connects label to input */}
+            <label htmlFor="password" className="block mb-2 text-gray-700">
+              Your Password
+            </label>
             <input
+              id="password"
               type="password"
               placeholder="* * * * * * * * * * * "
               value={password}
@@ -101,7 +91,6 @@ export default function LoginPage() {
               className="w-full mb-4 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
-
 
           {/* Login button */}
           <button
@@ -120,9 +109,9 @@ export default function LoginPage() {
               Forgot password?
             </a>
           </div>
-          
+
         </form>
-        
+
         {/* Error message box */}
         {statusMessage && (
           <div className="mt-6 p-3 bg-yellow-100 border border-yellow-300 rounded-lg text-yellow-800 text-sm w-full max-w-md text-center">
