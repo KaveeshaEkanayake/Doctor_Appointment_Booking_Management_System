@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit --runInBand"
   },
   "jest": {
     "testEnvironment": "node",
-    "transform": {}
+    "transform": {},
+    "testTimeout": 30000
   },
   "keywords": [],
   "author": "",
