@@ -93,7 +93,7 @@ export default function DoctorRegistration() {
 
  try {
 
-    const res = await axios.post("http://localhost:5000/registerDoctor", {
+    const res = await axios.post("http://localhost:5000/api/auth/registerDoctor", {
       fullName,
       phone,
       email,
