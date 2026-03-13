@@ -27,6 +27,13 @@ jobs:
         working-directory: backend
         run: npm install
 
+      # Generate Prisma client before running tests
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Run tests
         working-directory: backend
         run: npm test
