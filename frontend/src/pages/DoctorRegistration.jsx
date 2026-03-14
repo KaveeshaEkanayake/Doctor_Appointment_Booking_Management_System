@@ -93,7 +93,7 @@ export default function DoctorRegistration() {
 
  try {
 
-    const res = await axios.post("http://localhost:5000/api/auth/registerDoctor", {
+    const res = await axios.post("http://localhost:5173/api/auth/doctor-registration", {
       fullName,
       phone,
       email,
@@ -142,7 +142,7 @@ export default function DoctorRegistration() {
 
         <p className="mb-6 text-gray-500">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/doctor-login" className="text-blue-600 hover:underline">
             Log in
           </Link>
         </p>
