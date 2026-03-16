@@ -8,7 +8,7 @@ const INVALID_CREDENTIALS_RESPONSE = {
   message: "Invalid credentials"
 };
 
-// POST /api/doctor/register
+// POST /api/auth/doctor/register
 export const registerDoctor = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -64,7 +64,7 @@ export const registerDoctor = async (req, res) => {
   }
 };
 
-// POST /api/doctor/login
+// POST /api/auth/doctor/login
 export const loginDoctor = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -97,7 +97,6 @@ export const loginDoctor = async (req, res) => {
       return res.status(401).json(INVALID_CREDENTIALS_RESPONSE);
     }
 
-    // Check if doctor is pending approval
     if (doctor.status === "PENDING") {
       return res.status(403).json({
         success: false,
@@ -105,7 +104,6 @@ export const loginDoctor = async (req, res) => {
       });
     }
 
-    // Check if doctor is rejected
     if (doctor.status === "REJECTED") {
       return res.status(403).json({
         success: false,

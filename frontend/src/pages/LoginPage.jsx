@@ -10,42 +10,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("");
+  const [role, setRole] = useState("patient");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Try patient login first
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", "patient");
-      navigate("/patient/dashboard");
-      return;
-    } catch (patientErr) {
-      // If patient login fails try doctor login
-      if (patientErr.response?.status !== 401) {
-        setStatusMessage("Invalid credentials");
-        setStatusType("error");
-        return;
-      }
-    }
+    const endpoint = role === "patient"
+      ? `${import.meta.env.VITE_API_URL}/api/auth/login`
+      : `${import.meta.env.VITE_API_URL}/api/auth/doctor/login`;
 
-    // Try doctor login
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/doctor/login`, {
-        email,
-        password,
-      });
+      const res = await axios.post(endpoint, { email, password });
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", "doctor");
-      navigate("/doctor/dashboard");
-    } catch (doctorErr) {
-      if (doctorErr.response?.status === 403) {
-        setStatusMessage(doctorErr.response.data.message);
+      localStorage.setItem("role", role);
+
+      if (role === "patient") {
+        navigate("/patient/dashboard");
+      } else {
+        navigate("/doctor/dashboard");
+      }
+
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setStatusMessage(err.response.data.message);
         setStatusType("error");
       } else {
         setStatusMessage("Invalid credentials");
@@ -69,16 +57,44 @@ export default function LoginPage() {
 
       <div className="w-1/2 flex flex-col justify-center items-center bg-white px-10">
         <h2 className="mt-6 text-4xl font-bold mb-2 text-black-700">Welcome back</h2>
-        <p className="mb-6 text-[#878787]">
+        <p className="mb-4 text-[#878787]">
           Don't have an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
             Sign up
           </Link>
         </p>
 
+        {/* Role selector */}
+        <div className="flex mb-6 border rounded-lg overflow-hidden w-full max-w-md">
+          <button
+            type="button"
+            onClick={() => setRole("patient")}
+            className={`flex-1 py-2 text-sm font-medium transition ${
+              role === "patient"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            Patient
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("doctor")}
+            className={`flex-1 py-2 text-sm font-medium transition ${
+              role === "doctor"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            Doctor
+          </button>
+        </div>
+
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-4 bg-white p-6 rounded-lg">
           <div>
-            <label htmlFor="email" className="block mb-2 text-gray-700">Email Address</label>
+            <label htmlFor="email" className="block mb-2 text-gray-700">
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
@@ -90,7 +106,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-2 text-gray-700">Your Password</label>
+            <label htmlFor="password" className="block mb-2 text-gray-700">
+              Your Password
+            </label>
             <input
               id="password"
               type="password"
@@ -101,7 +119,10 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
             Log in
           </button>
 
@@ -109,7 +130,9 @@ export default function LoginPage() {
             <label className="flex items-center">
               <input type="checkbox" className="mr-2" /> Remember me
             </label>
-            <a href="/forgot" className="text-blue-600 hover:underline">Forgot password?</a>
+            <a href="/forgot" className="text-blue-600 hover:underline">
+              Forgot password?
+            </a>
           </div>
         </form>
 

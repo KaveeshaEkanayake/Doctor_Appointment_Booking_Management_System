@@ -16,6 +16,6 @@ app.use(cors({
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/auth/doctor", doctorRoutes); // 
+app.use("/api/auth/doctor", doctorRoutes);
 
 export default app;

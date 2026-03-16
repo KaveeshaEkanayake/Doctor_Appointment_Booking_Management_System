@@ -18,7 +18,6 @@ export default function RegisterPage() {
     lastName: "",
     email: "",
     password: "",
-    phone: ""
   });
 
   const handleChange = (e) => {
@@ -28,7 +27,6 @@ export default function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Frontend validation
     const passwordRegex = /^(?=.*\d).{8,}$/;
 
     if (!formData.email) {
@@ -44,7 +42,6 @@ export default function RegisterPage() {
     }
 
     try {
-      // ✅ Fixed: backticks + phone included
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         ...formData,
         phone: phone
@@ -53,7 +50,6 @@ export default function RegisterPage() {
       setStatusMessage("Registration successful! Redirecting to login...");
       setStatusType("success");
 
-      // ✅ Fixed: redirect to /login not /register
       setTimeout(() => navigate("/login"), 2000);
 
     } catch (err) {
@@ -64,75 +60,60 @@ export default function RegisterPage() {
 
   return (
     <div className="flex h-screen bg-[#F6FAFF]">
-      {/* Left side with image and logo */}
       <div className="hidden md:flex w-2/4 mt-[160px]">
         <div className="flex h-full bg-blue-50">
           <div className="absolute top-14 left-60 flex items-center space-x-2">
             <img src={logoImg} alt="MediCare Logo" className="h-16" />
           </div>
         </div>
-
         <div className="absolute top-100 left-0 hidden md:flex w-[900px] h-[580px]">
-          <img
-            src={headerImg}
-            alt="Doctors"
-            className="w-[1600px] h-auto"
-          />
+          <img src={headerImg} alt="Doctors" className="w-[1600px] h-auto" />
         </div>
       </div>
 
-      {/* Right side register form */}
       <div className="w-1/2 flex flex-col justify-center items-center bg-white px-10">
-
         <h2 className="mt-6 text-4xl font-bold mb-1 text-black-700">Hey There</h2>
+
+        {/*  Single paragraph with both links */}
         <p className="mb-6 text-[#878787]">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-600 hover:underline">
             Log in
           </Link>
+          {" "}|{" "}
+          <Link to="/doctor/register" className="text-blue-600 hover:underline">
+            Register as Doctor
+          </Link>
         </p>
-        <p className="mb-6 text-[#878787]">
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Log in
-            </Link>
-            {" "}|{" "}
-            <Link to="/doctor/register" className="text-blue-600 hover:underline">
-              Register as Doctor
-            </Link>
-          </p>
-```
+
         <form
           onSubmit={handleRegister}
           className="w-full max-w-md space-y-3 bg-white p-6 rounded-lg"
         >
-                      {/* First Name */}
-              <div>
-                <label htmlFor="firstName" className="block mb-2 text-gray-700">First Name</label>
-                <input
-                  id="firstName"
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
+          <div>
+            <label htmlFor="firstName" className="block mb-2 text-gray-700">First Name</label>
+            <input
+              id="firstName"
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              onChange={handleChange}
+              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
 
-              {/* Last Name */}
-              <div>
-                <label htmlFor="lastName" className="block mb-2 text-gray-700">Last Name</label>
-                <input
-                  id="lastName"
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
+          <div>
+            <label htmlFor="lastName" className="block mb-2 text-gray-700">Last Name</label>
+            <input
+              id="lastName"
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              onChange={handleChange}
+              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block mb-2 text-gray-700">Phone Number</label>
             <PhoneInput
@@ -145,7 +126,6 @@ export default function RegisterPage() {
             />
           </div>
 
-                    {/* Email */}
           <div>
             <label htmlFor="email" className="block mb-2 text-gray-700">Email Address</label>
             <input
@@ -158,7 +138,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="password" className="block mb-2 text-gray-700">Password</label>
             <input
@@ -171,7 +150,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Sign Up Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
@@ -179,16 +157,13 @@ export default function RegisterPage() {
             Sign Up
           </button>
 
-          {/* Remember me */}
           <div className="flex justify-between items-center text-sm">
             <label className="flex items-center">
               <input type="checkbox" className="mr-2" /> Remember me
             </label>
           </div>
-
         </form>
 
-        {/* Status message */}
         {statusMessage && (
           <div className={`mt-4 p-3 border rounded-lg text-sm w-full max-w-md text-center ${
             statusType === "success"
@@ -198,7 +173,6 @@ export default function RegisterPage() {
             {statusMessage}
           </div>
         )}
-
       </div>
     </div>
   );

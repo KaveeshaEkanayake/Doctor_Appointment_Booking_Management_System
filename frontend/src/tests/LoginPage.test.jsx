@@ -5,26 +5,18 @@ import axios from 'axios'
 import LoginPage from '../pages/LoginPage'
 
 vi.mock('axios')
-
 vi.mock('../assets/LoginImg.png', () => ({ default: 'test-file-stub' }))
 vi.mock('../assets/Logo04.PNG', () => ({ default: 'test-file-stub' }))
 
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate
-  }
+  return { ...actual, useNavigate: () => mockNavigate }
 })
 
-const renderLoginPage = () => {
-  return render(
-    <MemoryRouter>
-      <LoginPage />
-    </MemoryRouter>
-  )
-}
+const renderLoginPage = () => render(
+  <MemoryRouter><LoginPage /></MemoryRouter>
+)
 
 describe('LoginPage', () => {
 
@@ -40,6 +32,12 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: 'Log in' })).toBeDefined()
   })
 
+  it('should render patient and doctor role selector', () => {
+    renderLoginPage()
+    expect(screen.getByRole('button', { name: 'Patient' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Doctor' })).toBeDefined()
+  })
+
   it('should update email and password fields on input', () => {
     renderLoginPage()
     const emailInput = screen.getByLabelText('Email Address')
@@ -52,8 +50,7 @@ describe('LoginPage', () => {
     expect(passwordInput.value).toBe('password123')
   })
 
-  it('should store token and navigate to dashboard on successful login', async () => {
-    // ✅ Fixed: patient login succeeds first try
+  it('should store token and navigate to patient dashboard on successful patient login', async () => {
     axios.post.mockResolvedValueOnce({ data: { token: 'fake-jwt-token' } })
     renderLoginPage()
 
@@ -67,14 +64,30 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(localStorage.getItem('token')).toBe('fake-jwt-token')
-      // ✅ Fixed: updated to /patient/dashboard
       expect(mockNavigate).toHaveBeenCalledWith('/patient/dashboard')
     })
   })
 
+  it('should navigate to doctor dashboard on successful doctor login', async () => {
+    axios.post.mockResolvedValueOnce({ data: { token: 'fake-doctor-token' } })
+    renderLoginPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Doctor' }))
+    fireEvent.change(screen.getByLabelText('Email Address'), {
+      target: { value: 'doctor@gmail.com' }
+    })
+    fireEvent.change(screen.getByLabelText('Your Password'), {
+      target: { value: 'password123' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Log in' }))
+
+    await waitFor(() => {
+      expect(localStorage.getItem('token')).toBe('fake-doctor-token')
+      expect(mockNavigate).toHaveBeenCalledWith('/doctor/dashboard')
+    })
+  })
+
   it('should show error message on invalid credentials', async () => {
-    // Both patient and doctor login fail
-    axios.post.mockRejectedValueOnce({ response: { status: 401 } })
     axios.post.mockRejectedValueOnce({ response: { status: 401 } })
     renderLoginPage()
 
@@ -92,16 +105,18 @@ describe('LoginPage', () => {
   })
 
   it('should show pending message for doctor awaiting approval', async () => {
-    // Patient login fails with 401
-    axios.post.mockRejectedValueOnce({ response: { status: 401 } })
-    // Doctor login fails with 403 pending
+    renderLoginPage()
+
+    // ✅ Switch to doctor role FIRST
+    fireEvent.click(screen.getByRole('button', { name: 'Doctor' }))
+
+    // ✅ Then set up mock
     axios.post.mockRejectedValueOnce({
       response: {
         status: 403,
         data: { message: 'Your account is awaiting approval from the administrator' }
       }
     })
-    renderLoginPage()
 
     fireEvent.change(screen.getByLabelText('Email Address'), {
       target: { value: 'doctor@gmail.com' }
