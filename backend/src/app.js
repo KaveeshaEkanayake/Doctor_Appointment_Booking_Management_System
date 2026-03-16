@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
+import doctorRoutes from "./routes/doctor.routes.js";
 
 const app = express();
 
-// CORS configuration
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -13,10 +13,9 @@ app.use(cors({
   credentials: true
 }));
 
-// Allows app to read JSON from request body
 app.use(express.json());
 
-// All auth routes live under /api/auth
 app.use("/api/auth", authRoutes);
+app.use("/api/auth/doctor", doctorRoutes);
 
 export default app;
