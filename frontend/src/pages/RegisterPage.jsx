@@ -91,7 +91,17 @@ export default function RegisterPage() {
             Log in
           </Link>
         </p>
-
+        <p className="mb-6 text-[#878787]">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Log in
+            </Link>
+            {" "}|{" "}
+            <Link to="/doctor/register" className="text-blue-600 hover:underline">
+              Register as Doctor
+            </Link>
+          </p>
+```
         <form
           onSubmit={handleRegister}
           className="w-full max-w-md space-y-3 bg-white p-6 rounded-lg"

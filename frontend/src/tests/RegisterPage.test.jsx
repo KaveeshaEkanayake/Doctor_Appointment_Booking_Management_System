@@ -4,14 +4,11 @@ import { MemoryRouter } from 'react-router-dom'
 import axios from 'axios'
 import RegisterPage from '../pages/RegisterPage'
 
-// Mock axios
 vi.mock('axios')
 
-// Mock image imports
 vi.mock('../assets/LoginImg.png', () => ({ default: 'test-file-stub' }))
 vi.mock('../assets/Logo04.PNG', () => ({ default: 'test-file-stub' }))
 
-// Mock react-phone-input-2
 vi.mock('react-phone-input-2', () => ({
   default: ({ onChange }) => (
     <input
@@ -21,7 +18,6 @@ vi.mock('react-phone-input-2', () => ({
   )
 }))
 
-// Mock useNavigate
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -120,7 +116,9 @@ describe('RegisterPage', () => {
 
   it('should have a link to login page', () => {
     renderRegisterPage()
-    expect(screen.getByText('Log in')).toBeDefined()
+    // Fixed: use getAllByText since there are multiple "Log in" links
+    const loginLinks = screen.getAllByText('Log in')
+    expect(loginLinks.length).toBeGreaterThan(0)
   })
 
 })

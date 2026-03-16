@@ -7,10 +7,10 @@ import DoctorRegistration from "./pages/DoctorRegistration";
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/doctor-registration" element={<DoctorRegistration />} />
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/doctor/register" element={<DoctorRegistration />} />
     </Routes>
   );
 }

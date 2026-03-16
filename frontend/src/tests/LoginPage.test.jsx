@@ -53,7 +53,8 @@ describe('LoginPage', () => {
   })
 
   it('should store token and navigate to dashboard on successful login', async () => {
-    axios.post.mockResolvedValue({ data: { token: 'fake-jwt-token' } })
+    // ✅ Fixed: patient login succeeds first try
+    axios.post.mockResolvedValueOnce({ data: { token: 'fake-jwt-token' } })
     renderLoginPage()
 
     fireEvent.change(screen.getByLabelText('Email Address'), {
@@ -66,12 +67,15 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(localStorage.getItem('token')).toBe('fake-jwt-token')
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard')
+      // ✅ Fixed: updated to /patient/dashboard
+      expect(mockNavigate).toHaveBeenCalledWith('/patient/dashboard')
     })
   })
 
   it('should show error message on invalid credentials', async () => {
-    axios.post.mockRejectedValue(new Error('Invalid credentials'))
+    // Both patient and doctor login fail
+    axios.post.mockRejectedValueOnce({ response: { status: 401 } })
+    axios.post.mockRejectedValueOnce({ response: { status: 401 } })
     renderLoginPage()
 
     fireEvent.change(screen.getByLabelText('Email Address'), {
@@ -84,6 +88,31 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Invalid credentials')).toBeDefined()
+    })
+  })
+
+  it('should show pending message for doctor awaiting approval', async () => {
+    // Patient login fails with 401
+    axios.post.mockRejectedValueOnce({ response: { status: 401 } })
+    // Doctor login fails with 403 pending
+    axios.post.mockRejectedValueOnce({
+      response: {
+        status: 403,
+        data: { message: 'Your account is awaiting approval from the administrator' }
+      }
+    })
+    renderLoginPage()
+
+    fireEvent.change(screen.getByLabelText('Email Address'), {
+      target: { value: 'doctor@gmail.com' }
+    })
+    fireEvent.change(screen.getByLabelText('Your Password'), {
+      target: { value: 'password123' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Log in' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Your account is awaiting approval from the administrator')).toBeDefined()
     })
   })
 
