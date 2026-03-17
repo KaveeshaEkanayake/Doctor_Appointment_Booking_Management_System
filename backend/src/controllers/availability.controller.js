@@ -19,7 +19,7 @@ export const getAvailability = async (req, res) => {
             endTime: true,
             isActive: true
           },
-          orderBy: { day: "asc" }
+          orderBy: [{ day: "asc" }, { startTime: "asc" }]
         }
       }
     });
@@ -56,14 +56,18 @@ export const updateAvailability = async (req, res) => {
     });
   }
 
-  const { availability, appointmentDuration } = req.body;
+  const { availability } = req.body;
+  let { appointmentDuration } = req.body;
 
-  // Validate appointment duration
-  if (appointmentDuration !== undefined && !VALID_DURATIONS.includes(appointmentDuration)) {
-    return res.status(400).json({
-      success: false,
-      message: "Appointment duration must be 15, 30, or 60 minutes"
-    });
+  // Coerce to integer if string
+  if (appointmentDuration !== undefined) {
+    appointmentDuration = Number(appointmentDuration);
+    if (!VALID_DURATIONS.includes(appointmentDuration)) {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment duration must be 15, 30, or 60 minutes"
+      });
+    }
   }
 
   // Validate availability slots
@@ -94,32 +98,35 @@ export const updateAvailability = async (req, res) => {
   }
 
   try {
-    // Update appointment duration if provided
-    if (appointmentDuration !== undefined) {
-      await prisma.doctor.update({
-        where: { id: req.user.id },
-        data: { appointmentDuration }
-      });
-    }
-
-    // Replace all availability slots (delete old + create new)
-    if (availability) {
-      await prisma.availability.deleteMany({
-        where: { doctorId: req.user.id }
-      });
-
-      if (availability.length > 0) {
-        await prisma.availability.createMany({
-          data: availability.map((slot) => ({
-            doctorId: req.user.id,
-            day: slot.day,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            isActive: slot.isActive !== undefined ? slot.isActive : true
-          }))
+    // Use transaction for atomic update
+    await prisma.$transaction(async (tx) => {
+      // Update appointment duration if provided
+      if (appointmentDuration !== undefined) {
+        await tx.doctor.update({
+          where: { id: req.user.id },
+          data: { appointmentDuration }
         });
       }
-    }
+
+      // Replace all availability slots (delete old + create new)
+      if (availability) {
+        await tx.availability.deleteMany({
+          where: { doctorId: req.user.id }
+        });
+
+        if (availability.length > 0) {
+          await tx.availability.createMany({
+            data: availability.map((slot) => ({
+              doctorId: req.user.id,
+              day: slot.day,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              isActive: slot.isActive !== undefined ? slot.isActive : true
+            }))
+          });
+        }
+      }
+    });
 
     // Fetch updated data
     const doctor = await prisma.doctor.findUnique({
@@ -134,7 +141,7 @@ export const updateAvailability = async (req, res) => {
             endTime: true,
             isActive: true
           },
-          orderBy: { day: "asc" }
+          orderBy: [{ day: "asc" }, { startTime: "asc" }]
         }
       }
     });
@@ -179,7 +186,7 @@ export const getPublicAvailability = async (req, res) => {
             startTime: true,
             endTime: true
           },
-          orderBy: { day: "asc" }
+          orderBy: [{ day: "asc" }, { startTime: "asc" }]
         }
       }
     });
