@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import DoctorRegistration from "./pages/DoctorRegistration";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorProfilePage from "./pages/DoctorProfilePage";
+import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
         element={
           <ProtectedRoute allowedRole="doctor">
             <DoctorProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor/availability"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
       />
