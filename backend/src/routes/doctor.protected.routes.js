@@ -2,6 +2,7 @@ import express from "express";
 import { body } from "express-validator";
 import { authenticate, authorizeDoctor } from "../middlewares/auth.middleware.js";
 import { getProfile, updateProfile } from "../controllers/doctor.profile.controller.js";
+import { getAvailability, updateAvailability } from "../controllers/availability.controller.js";
 
 const router = express.Router();
 
@@ -26,8 +27,21 @@ const updateProfileValidation = [
     .notEmpty().withMessage("Specialisation cannot be empty")
 ];
 
-// All routes here require doctor auth
+const updateAvailabilityValidation = [
+  body("availability")
+    .optional()
+    .isArray().withMessage("Availability must be an array"),
+  body("appointmentDuration")
+    .optional()
+    .isInt().withMessage("Appointment duration must be a number")
+];
+
+// Profile routes
 router.get("/profile", authenticate, authorizeDoctor, getProfile);
 router.put("/profile", authenticate, authorizeDoctor, updateProfileValidation, updateProfile);
+
+// Availability routes
+router.get("/availability", authenticate, authorizeDoctor, getAvailability);
+router.put("/availability", authenticate, authorizeDoctor, updateAvailabilityValidation, updateAvailability);
 
 export default router;
