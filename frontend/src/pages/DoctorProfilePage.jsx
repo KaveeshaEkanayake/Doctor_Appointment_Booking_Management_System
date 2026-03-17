@@ -41,6 +41,7 @@ export default function DoctorProfilePage() {
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("");
+  const [errors, setErrors] = useState({});
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoUrl, setPhotoUrl] = useState("");
 
@@ -80,31 +81,71 @@ export default function DoctorProfilePage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field when user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleDiscard = () => {
     if (originalProfile) {
       setProfile(originalProfile);
       setStatusMessage("");
+      setErrors({});
     }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!profile.bio || !profile.bio.trim()) {
+      newErrors.bio = "Bio is required";
+    }
+    if (!profile.qualifications || !profile.qualifications.trim()) {
+      newErrors.qualifications = "Qualifications is required";
+    }
+    if (!profile.experience || !profile.experience.trim()) {
+      newErrors.experience = "Experience is required";
+    }
+    if (!profile.specialisation || !profile.specialisation.trim()) {
+      newErrors.specialisation = "Specialisation is required";
+    }
+    if (
+      profile.consultationFee === "" ||
+      profile.consultationFee === null ||
+      profile.consultationFee === undefined
+    ) {
+      newErrors.consultationFee = "Consultation fee is required";
+    } else if (parseFloat(profile.consultationFee) < 0) {
+      newErrors.consultationFee =
+        "Consultation fee must be a non-negative number";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setStatusMessage("");
+
+    if (!validateForm()) {
+      setStatusMessage("Please fill in all required fields");
+      setStatusType("error");
+      return;
+    }
+
+    setSaving(true);
 
     try {
       const res = await axios.put(
         `${API_URL}/api/doctor/profile`,
         {
-          bio: profile.bio || undefined,
-          qualifications: profile.qualifications || undefined,
-          experience: profile.experience || undefined,
-          consultationFee: profile.consultationFee !== ""
-            ? parseFloat(profile.consultationFee)
-            : undefined,
-          specialisation: profile.specialisation || undefined,
+          bio: profile.bio,
+          qualifications: profile.qualifications,
+          experience: profile.experience,
+          consultationFee: parseFloat(profile.consultationFee),
+          specialisation: profile.specialisation,
           profilePhoto: profile.profilePhoto || undefined,
         },
         {
@@ -113,6 +154,7 @@ export default function DoctorProfilePage() {
       );
 
       setOriginalProfile(profile);
+      setErrors({});
       const doctor = res.data.doctor;
       if (doctor.status === "APPROVED") {
         setStatusMessage("Profile Updated Successfully!");
@@ -253,8 +295,11 @@ export default function DoctorProfilePage() {
 
             {/* Bio */}
             <div className="mb-6">
-              <label htmlFor="bio" className="block text-sm font-semibold text-gray-900 mb-2">
-                Bio
+              <label
+                htmlFor="bio"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+              >
+                Bio <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="bio"
@@ -263,15 +308,23 @@ export default function DoctorProfilePage() {
                 onChange={handleChange}
                 placeholder="Write a brief professional summary about your practice and approach..."
                 rows={4}
-                className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none bg-gray-50"
+                className={`w-full border rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none bg-gray-50 ${
+                  errors.bio ? "border-red-400" : "border-gray-200"
+                }`}
               />
+              {errors.bio && (
+                <p className="text-red-500 text-xs mt-1">{errors.bio}</p>
+              )}
             </div>
 
             {/* Qualifications + Experience */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
               <div>
-                <label htmlFor="qualifications" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Qualifications
+                <label
+                  htmlFor="qualifications"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Qualifications <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="qualifications"
@@ -280,12 +333,22 @@ export default function DoctorProfilePage() {
                   value={profile.qualifications}
                   onChange={handleChange}
                   placeholder="e.g. MBBS, MS - General Surgery"
-                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                  className={`w-full border rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 ${
+                    errors.qualifications ? "border-red-400" : "border-gray-200"
+                  }`}
                 />
+                {errors.qualifications && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.qualifications}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="experience" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Experience (Years)
+                <label
+                  htmlFor="experience"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Experience (Years) <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="experience"
@@ -294,23 +357,35 @@ export default function DoctorProfilePage() {
                   value={profile.experience}
                   onChange={handleChange}
                   placeholder="e.g. 12"
-                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                  className={`w-full border rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 ${
+                    errors.experience ? "border-red-400" : "border-gray-200"
+                  }`}
                 />
+                {errors.experience && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.experience}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Specialisation + Fee */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <div>
-                <label htmlFor="specialisation" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Specialization
+                <label
+                  htmlFor="specialisation"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Specialization <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="specialisation"
                   name="specialisation"
                   value={profile.specialisation}
                   onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 appearance-none"
+                  className={`w-full border rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 appearance-none ${
+                    errors.specialisation ? "border-red-400" : "border-gray-200"
+                  }`}
                 >
                   <option value="">Select specialisation</option>
                   {SPECIALISATIONS.map((spec) => (
@@ -319,10 +394,18 @@ export default function DoctorProfilePage() {
                     </option>
                   ))}
                 </select>
+                {errors.specialisation && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.specialisation}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="consultationFee" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Consultation Fee (Rs)
+                <label
+                  htmlFor="consultationFee"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Consultation Fee (Rs) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
@@ -336,9 +419,18 @@ export default function DoctorProfilePage() {
                     onChange={handleChange}
                     placeholder="150"
                     min="0"
-                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                    className={`w-full border rounded-xl pl-10 pr-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 ${
+                      errors.consultationFee
+                        ? "border-red-400"
+                        : "border-gray-200"
+                    }`}
                   />
                 </div>
+                {errors.consultationFee && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.consultationFee}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -374,7 +466,10 @@ export default function DoctorProfilePage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Update Profile Photo
               </h3>
-              <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="photoUrl"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Image URL
               </label>
               <input
@@ -388,7 +483,10 @@ export default function DoctorProfilePage() {
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => { setShowPhotoModal(false); setPhotoUrl(""); }}
+                  onClick={() => {
+                    setShowPhotoModal(false);
+                    setPhotoUrl("");
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                 >
                   Cancel
