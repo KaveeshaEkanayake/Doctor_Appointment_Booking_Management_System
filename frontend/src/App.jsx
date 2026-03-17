@@ -7,6 +7,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorProfilePage from "./pages/DoctorProfilePage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MyAppointments from "./pages/MyAppointments";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
+      <Route path="/my-appointments" element={<MyAppointments />} />
 
       {/* Doctor protected routes */}
       <Route
