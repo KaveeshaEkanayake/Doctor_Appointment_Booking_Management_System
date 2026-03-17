@@ -25,7 +25,6 @@ model Doctor {
   phone          String
   specialisation String
   status         Status   @default(PENDING)
-<<<<<<< Updated upstream
 
   // Profile fields (DAMS-20)
   profilePhoto    String?
@@ -56,16 +55,12 @@ model Availability {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([doctorId, day, startTime, endTime])
-=======
-  createdAt      DateTime @default(now())
->>>>>>> Stashed changes
 }
 
 enum Status {
   PENDING
   APPROVED
   REJECTED
-<<<<<<< Updated upstream
 }
 
 enum Day {
@@ -76,6 +71,4 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
-=======
->>>>>>> Stashed changes
 }
