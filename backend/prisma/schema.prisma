@@ -33,12 +33,42 @@ model Doctor {
   experience      String?
   consultationFee Float?
 
+  // Availability settings (DAMS-21)
+  appointmentDuration Int @default(30)
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  availability Availability[]
+}
+
+model Availability {
+  id        Int    @id @default(autoincrement())
+  doctorId  Int
+  day       Day
+  startTime String
+  endTime   String
+  isActive  Boolean @default(true)
+
+  doctor    Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([doctorId, day, startTime, endTime])
 }
 
 enum Status {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
