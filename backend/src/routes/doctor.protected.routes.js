@@ -7,24 +7,21 @@ import { getAvailability, updateAvailability } from "../controllers/availability
 const router = express.Router();
 
 const updateProfileValidation = [
-  body("profilePhoto")
-    .optional()
-    .isURL().withMessage("Profile photo must be a valid URL"),
   body("bio")
-    .optional()
+    .notEmpty().withMessage("Bio is required")
     .isLength({ max: 1000 }).withMessage("Bio must be under 1000 characters"),
   body("qualifications")
-    .optional()
-    .notEmpty().withMessage("Qualifications cannot be empty"),
+    .notEmpty().withMessage("Qualifications is required"),
   body("experience")
-    .optional()
-    .notEmpty().withMessage("Experience cannot be empty"),
+    .notEmpty().withMessage("Experience is required"),
   body("consultationFee")
-    .optional()
+    .notEmpty().withMessage("Consultation fee is required")
     .isFloat({ min: 0 }).withMessage("Consultation fee must be a non-negative number"),
   body("specialisation")
+    .notEmpty().withMessage("Specialisation is required"),
+  body("profilePhoto")
     .optional()
-    .notEmpty().withMessage("Specialisation cannot be empty")
+    .isURL().withMessage("Profile photo must be a valid URL")
 ];
 
 const updateAvailabilityValidation = [
