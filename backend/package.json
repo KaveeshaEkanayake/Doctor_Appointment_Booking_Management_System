@@ -12,7 +12,10 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {},
-    "testTimeout": 30000
+    "testTimeout": 30000,
+    "testMatch": [
+      "**/backend/src/tests/**/*.test.js"
+    ]
   },
   "keywords": [],
   "author": "",

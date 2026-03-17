@@ -1,0 +1,424 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import DoctorLayout from "../layouts/DoctorLayout";
+import { FiCamera } from "react-icons/fi";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+const SPECIALISATIONS = [
+  "General Surgery",
+  "Cardiology",
+  "Dermatology",
+  "Neurology",
+  "Orthopedics",
+  "Pediatrics",
+  "Psychiatry",
+  "Ophthalmology",
+  "ENT",
+  "Gynecology",
+  "Urology",
+  "Oncology",
+  "Radiology",
+  "Anesthesiology",
+  "General Practice",
+];
+
+export default function DoctorProfilePage() {
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    specialisation: "",
+    status: "",
+    profilePhoto: "",
+    bio: "",
+    qualifications: "",
+    experience: "",
+    consultationFee: "",
+  });
+
+  const [originalProfile, setOriginalProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("");
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/doctor/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const doctor = res.data.doctor;
+      const profileData = {
+        firstName: doctor.firstName ?? "",
+        lastName: doctor.lastName ?? "",
+        specialisation: doctor.specialisation ?? "",
+        status: doctor.status ?? "",
+        profilePhoto: doctor.profilePhoto ?? "",
+        bio: doctor.bio ?? "",
+        qualifications: doctor.qualifications ?? "",
+        experience: doctor.experience ?? "",
+        consultationFee: doctor.consultationFee ?? "",
+      };
+      setProfile(profileData);
+      setOriginalProfile(profileData);
+    } catch (err) {
+      setStatusMessage("Failed to load profile");
+      setStatusType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDiscard = () => {
+    if (originalProfile) {
+      setProfile(originalProfile);
+      setStatusMessage("");
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setStatusMessage("");
+
+    try {
+      const res = await axios.put(
+        `${API_URL}/api/doctor/profile`,
+        {
+          bio: profile.bio || undefined,
+          qualifications: profile.qualifications || undefined,
+          experience: profile.experience || undefined,
+          consultationFee: profile.consultationFee !== ""
+            ? parseFloat(profile.consultationFee)
+            : undefined,
+          specialisation: profile.specialisation || undefined,
+          profilePhoto: profile.profilePhoto || undefined,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setOriginalProfile(profile);
+      const doctor = res.data.doctor;
+      if (doctor.status === "APPROVED") {
+        setStatusMessage("Profile Updated Successfully!");
+      } else {
+        setStatusMessage(
+          "Profile Updated Successfully! Your profile will be visible once approved by admin."
+        );
+      }
+      setStatusType("success");
+    } catch (err) {
+      if (err.response?.data?.errors) {
+        setStatusMessage(err.response.data.errors[0].msg);
+      } else {
+        setStatusMessage("Failed to update profile. Please try again.");
+      }
+      setStatusType("error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePhotoSubmit = () => {
+    if (photoUrl.trim()) {
+      setProfile((prev) => ({ ...prev, profilePhoto: photoUrl.trim() }));
+    }
+    setShowPhotoModal(false);
+    setPhotoUrl("");
+  };
+
+  if (loading) {
+    return (
+      <DoctorLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </DoctorLayout>
+    );
+  }
+
+  return (
+    <DoctorLayout>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 sm:mb-8">
+          <div>
+            <p className="text-gray-500 text-sm sm:text-base">
+              Hi, Dr. {profile.firstName}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Profile
+            </h1>
+          </div>
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+              {profile.profilePhoto ? (
+                <img
+                  src={profile.profilePhoto}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium">
+                  {profile.firstName?.[0]}
+                  {profile.lastName?.[0]}
+                </div>
+              )}
+            </div>
+            <span className="text-sm font-medium text-gray-700">
+              Dr. {profile.firstName}
+            </span>
+          </div>
+        </div>
+
+        {/* Status Banner */}
+        {profile.status === "PENDING" && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs sm:text-sm font-medium">
+            ⏳ Your account is pending admin approval. Your profile won't be
+            visible to patients until approved.
+          </div>
+        )}
+        {profile.status === "APPROVED" && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm font-medium">
+            ✅ Your profile is live and visible to patients.
+          </div>
+        )}
+        {profile.status === "REJECTED" && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-medium">
+            ❌ Your account has been rejected. Please contact support.
+          </div>
+        )}
+
+        {/* Profile Card */}
+        <form onSubmit={handleSave}>
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 lg:p-8">
+            {/* Photo + Name Section */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-100">
+              <div className="relative">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-50 border-2 border-blue-100 overflow-hidden">
+                  {profile.profilePhoto ? (
+                    <img
+                      src={profile.profilePhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-blue-400 text-xl sm:text-2xl font-semibold">
+                      {profile.firstName?.[0]}
+                      {profile.lastName?.[0]}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoModal(true)}
+                  className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-700 transition"
+                  aria-label="Change profile photo"
+                  title="Change profile photo"
+                >
+                  <FiCamera className="text-xs sm:text-sm" />
+                </button>
+              </div>
+              <div className="text-center sm:text-left">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  Dr. {profile.firstName} {profile.lastName}
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {profile.specialisation}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoModal(true)}
+                  className="mt-2 text-blue-600 text-sm font-medium hover:text-blue-700 transition"
+                >
+                  Change Photo
+                </button>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="mb-6">
+              <label htmlFor="bio" className="block text-sm font-semibold text-gray-900 mb-2">
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                value={profile.bio}
+                onChange={handleChange}
+                placeholder="Write a brief professional summary about your practice and approach..."
+                rows={4}
+                className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none bg-gray-50"
+              />
+            </div>
+
+            {/* Qualifications + Experience */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+              <div>
+                <label htmlFor="qualifications" className="block text-sm font-semibold text-gray-900 mb-2">
+                  Qualifications
+                </label>
+                <input
+                  id="qualifications"
+                  type="text"
+                  name="qualifications"
+                  value={profile.qualifications}
+                  onChange={handleChange}
+                  placeholder="e.g. MBBS, MS - General Surgery"
+                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                />
+              </div>
+              <div>
+                <label htmlFor="experience" className="block text-sm font-semibold text-gray-900 mb-2">
+                  Experience (Years)
+                </label>
+                <input
+                  id="experience"
+                  type="text"
+                  name="experience"
+                  value={profile.experience}
+                  onChange={handleChange}
+                  placeholder="e.g. 12"
+                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                />
+              </div>
+            </div>
+
+            {/* Specialisation + Fee */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div>
+                <label htmlFor="specialisation" className="block text-sm font-semibold text-gray-900 mb-2">
+                  Specialization
+                </label>
+                <select
+                  id="specialisation"
+                  name="specialisation"
+                  value={profile.specialisation}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 appearance-none"
+                >
+                  <option value="">Select specialisation</option>
+                  {SPECIALISATIONS.map((spec) => (
+                    <option key={spec} value={spec}>
+                      {spec}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="consultationFee" className="block text-sm font-semibold text-gray-900 mb-2">
+                  Consultation Fee (Rs)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                    Rs
+                  </span>
+                  <input
+                    id="consultationFee"
+                    type="number"
+                    name="consultationFee"
+                    value={profile.consultationFee}
+                    onChange={handleChange}
+                    placeholder="150"
+                    min="0"
+                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="w-full sm:w-auto px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+              >
+                Discard Changes
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {saving ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <span>💾</span>
+                )}
+                Save Profile
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* Photo URL Modal */}
+        {showPhotoModal && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Update Profile Photo
+              </h3>
+              <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                Image URL
+              </label>
+              <input
+                id="photoUrl"
+                type="url"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowPhotoModal(false); setPhotoUrl(""); }}
+                  className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePhotoSubmit}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  Save Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Status Message */}
+        {statusMessage && (
+          <div
+            className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl text-xs sm:text-sm text-center font-medium ${
+              statusType === "success"
+                ? "bg-green-50 border border-green-200 text-green-700"
+                : "bg-red-50 border border-red-200 text-red-700"
+            }`}
+          >
+            {statusType === "success" && <span className="mr-2">✅</span>}
+            {statusMessage}
+          </div>
+        )}
+      </div>
+    </DoctorLayout>
+  );
+}
