@@ -257,7 +257,7 @@ export default function DoctorAvailabilityPage() {
               const dayData = daySlots[day.key];
               return (
                 <div key={day.key}>
-                  {dayData.slots.map((slot, slotIndex) => (
+                  {(dayData.isActive ? dayData.slots : [dayData.slots[0]]).map((slot, slotIndex) => (
                     <div
                       key={`${day.key}-${slotIndex}`}
                       className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 ${

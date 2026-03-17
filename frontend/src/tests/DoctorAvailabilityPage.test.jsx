@@ -189,7 +189,7 @@ describe('DoctorAvailabilityPage', () => {
     axios.get.mockReturnValueOnce(new Promise(() => {}))
     renderPage()
 
-    expect(document.querySelector('.animate-spin')).toBeDefined()
+    expect(document.querySelector('.animate-spin')).not.toBeNull()
   })
 
   it('should render sidebar navigation', async () => {
