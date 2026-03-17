@@ -25,7 +25,16 @@ model Doctor {
   phone          String
   specialisation String
   status         Status   @default(PENDING)
-  createdAt      DateTime @default(now())
+
+  // Profile fields (DAMS-20)
+  profilePhoto    String?
+  bio             String?
+  qualifications  String?
+  experience      String?
+  consultationFee Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum Status {
