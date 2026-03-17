@@ -9,7 +9,7 @@ let doctorId;
 
 beforeAll(async () => {
   await prisma.doctor.deleteMany({
-    where: { email: "profiletest@doctor.com" }
+    where: { email: { in: ["profiletest@doctor.com", "pending-profile@doctor.com"] } }
   });
 
   const hashedPassword = await bcrypt.hash("Test1234", 10);
@@ -35,7 +35,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.doctor.deleteMany({
-    where: { email: "profiletest@doctor.com" }
+    where: { email: { in: ["profiletest@doctor.com", "pending-profile@doctor.com"] } }
   });
   await prisma.$disconnect();
 });
@@ -199,7 +199,7 @@ describe("GET /api/doctors (public)", () => {
 });
 
 describe("GET /api/doctors/:id (public)", () => {
-  it("should return a single doctor profile", async () => {
+  it("should return a single approved doctor profile", async () => {
     const res = await request(app).get(`/api/doctors/${doctorId}`);
 
     expect(res.status).toBe(200);
@@ -221,5 +221,32 @@ describe("GET /api/doctors/:id (public)", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.doctor.password).toBeUndefined();
+  });
+
+  it("should return 404 for pending doctor on public endpoint", async () => {
+    const hashedPassword = await bcrypt.hash("Test1234", 10);
+    const pendingDoctor = await prisma.doctor.create({
+      data: {
+        firstName: "Pending",
+        lastName: "Doctor",
+        email: "pending-profile@doctor.com",
+        password: hashedPassword,
+        phone: "0779999999",
+        specialisation: "Dermatology",
+        status: "PENDING"
+      }
+    });
+
+    const res = await request(app).get(`/api/doctors/${pendingDoctor.id}`);
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+
+    await prisma.doctor.delete({ where: { id: pendingDoctor.id } });
+  });
+
+  it("should return 400 for invalid doctor ID", async () => {
+    const res = await request(app).get("/api/doctors/abc");
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Invalid doctor ID");
   });
 });

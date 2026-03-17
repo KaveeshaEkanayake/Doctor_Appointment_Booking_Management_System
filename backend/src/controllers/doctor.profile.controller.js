@@ -111,13 +111,21 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// GET /api/doctors/:id (public - for visitors)
+// GET /api/doctors/:id (public - only APPROVED)
 export const getPublicDoctorProfile = async (req, res) => {
   const { id } = req.params;
+  const parsedId = parseInt(id);
+
+  if (!Number.isInteger(parsedId) || parsedId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid doctor ID"
+    });
+  }
 
   try {
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: parseInt(id) },
+    const doctor = await prisma.doctor.findFirst({
+      where: { id: parsedId, status: "APPROVED" },
       select: {
         id: true,
         firstName: true,

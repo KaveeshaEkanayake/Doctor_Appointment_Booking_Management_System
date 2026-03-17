@@ -245,4 +245,27 @@ describe('DoctorProfilePage', () => {
     })
   })
 
+  it('should open photo modal when Change Photo is clicked', async () => {
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Change Photo')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByText('Change Photo'))
+
+    expect(screen.getByText('Update Profile Photo')).toBeDefined()
+    expect(screen.getByLabelText('Image URL')).toBeDefined()
+  })
+
+  it('should have accessible camera button', async () => {
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Change profile photo')).toBeDefined()
+    })
+  })
+
 })

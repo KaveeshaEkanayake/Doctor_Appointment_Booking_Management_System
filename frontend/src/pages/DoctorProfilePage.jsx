@@ -41,6 +41,8 @@ export default function DoctorProfilePage() {
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("");
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -55,15 +57,15 @@ export default function DoctorProfilePage() {
       });
       const doctor = res.data.doctor;
       const profileData = {
-        firstName: doctor.firstName || "",
-        lastName: doctor.lastName || "",
-        specialisation: doctor.specialisation || "",
-        status: doctor.status || "",
-        profilePhoto: doctor.profilePhoto || "",
-        bio: doctor.bio || "",
-        qualifications: doctor.qualifications || "",
-        experience: doctor.experience || "",
-        consultationFee: doctor.consultationFee || "",
+        firstName: doctor.firstName ?? "",
+        lastName: doctor.lastName ?? "",
+        specialisation: doctor.specialisation ?? "",
+        status: doctor.status ?? "",
+        profilePhoto: doctor.profilePhoto ?? "",
+        bio: doctor.bio ?? "",
+        qualifications: doctor.qualifications ?? "",
+        experience: doctor.experience ?? "",
+        consultationFee: doctor.consultationFee ?? "",
       };
       setProfile(profileData);
       setOriginalProfile(profileData);
@@ -99,7 +101,7 @@ export default function DoctorProfilePage() {
           bio: profile.bio || undefined,
           qualifications: profile.qualifications || undefined,
           experience: profile.experience || undefined,
-          consultationFee: profile.consultationFee
+          consultationFee: profile.consultationFee !== ""
             ? parseFloat(profile.consultationFee)
             : undefined,
           specialisation: profile.specialisation || undefined,
@@ -132,11 +134,12 @@ export default function DoctorProfilePage() {
     }
   };
 
-  const handlePhotoChange = () => {
-    const url = prompt("Enter the URL for your profile photo:");
-    if (url) {
-      setProfile((prev) => ({ ...prev, profilePhoto: url }));
+  const handlePhotoSubmit = () => {
+    if (photoUrl.trim()) {
+      setProfile((prev) => ({ ...prev, profilePhoto: photoUrl.trim() }));
     }
+    setShowPhotoModal(false);
+    setPhotoUrl("");
   };
 
   if (loading) {
@@ -156,7 +159,7 @@ export default function DoctorProfilePage() {
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 sm:mb-8">
           <div>
             <p className="text-gray-500 text-sm sm:text-base">
-              Hi, Dr.{profile.firstName}
+              Hi, Dr. {profile.firstName}
             </p>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Profile
@@ -223,8 +226,10 @@ export default function DoctorProfilePage() {
                 </div>
                 <button
                   type="button"
-                  onClick={handlePhotoChange}
+                  onClick={() => setShowPhotoModal(true)}
                   className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-700 transition"
+                  aria-label="Change profile photo"
+                  title="Change profile photo"
                 >
                   <FiCamera className="text-xs sm:text-sm" />
                 </button>
@@ -238,7 +243,7 @@ export default function DoctorProfilePage() {
                 </p>
                 <button
                   type="button"
-                  onClick={handlePhotoChange}
+                  onClick={() => setShowPhotoModal(true)}
                   className="mt-2 text-blue-600 text-sm font-medium hover:text-blue-700 transition"
                 >
                   Change Photo
@@ -361,6 +366,44 @@ export default function DoctorProfilePage() {
             </div>
           </div>
         </form>
+
+        {/* Photo URL Modal */}
+        {showPhotoModal && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Update Profile Photo
+              </h3>
+              <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                Image URL
+              </label>
+              <input
+                id="photoUrl"
+                type="url"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-gray-50 mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowPhotoModal(false); setPhotoUrl(""); }}
+                  className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePhotoSubmit}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  Save Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Status Message */}
         {statusMessage && (
