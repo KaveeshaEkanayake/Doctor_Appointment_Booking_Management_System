@@ -40,6 +40,14 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+const validProfileData = {
+  bio: "Experienced cardiologist with 10 years of practice",
+  qualifications: "MBBS, MD Cardiology",
+  experience: "10 years",
+  consultationFee: 2500,
+  specialisation: "Cardiology"
+};
+
 describe("GET /api/doctor/profile", () => {
   it("should return doctor profile when authenticated", async () => {
     const res = await request(app)
@@ -93,13 +101,7 @@ describe("PUT /api/doctor/profile", () => {
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
-      .send({
-        bio: "Experienced cardiologist with 10 years of practice",
-        qualifications: "MBBS, MD Cardiology",
-        experience: "10 years",
-        consultationFee: 2500,
-        specialisation: "Cardiology"
-      });
+      .send(validProfileData);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -114,6 +116,7 @@ describe("PUT /api/doctor/profile", () => {
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
+        ...validProfileData,
         profilePhoto: "https://res.cloudinary.com/demo/image/upload/doctor.jpg"
       });
 
@@ -129,6 +132,7 @@ describe("PUT /api/doctor/profile", () => {
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
+        ...validProfileData,
         profilePhoto: "not-a-valid-url"
       });
 
@@ -141,6 +145,7 @@ describe("PUT /api/doctor/profile", () => {
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
+        ...validProfileData,
         consultationFee: -500
       });
 
@@ -148,12 +153,16 @@ describe("PUT /api/doctor/profile", () => {
     expect(res.body.success).toBe(false);
   });
 
-  it("should allow partial profile update", async () => {
+  it("should update bio while keeping other fields", async () => {
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
-        bio: "Updated bio only"
+        bio: "Updated bio only",
+        qualifications: "MBBS, MD Cardiology",
+        experience: "10 years",
+        consultationFee: 2500,
+        specialisation: "Cardiology"
       });
 
     expect(res.status).toBe(200);
@@ -165,10 +174,53 @@ describe("PUT /api/doctor/profile", () => {
   it("should return 401 without token", async () => {
     const res = await request(app)
       .put("/api/doctor/profile")
-      .send({ bio: "Test" });
+      .send(validProfileData);
 
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
+  });
+
+  it("should reject empty required fields", async () => {
+    const res = await request(app)
+      .put("/api/doctor/profile")
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.errors.length).toBeGreaterThan(0);
+  });
+
+  it("should reject missing bio", async () => {
+    const res = await request(app)
+      .put("/api/doctor/profile")
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({
+        qualifications: "MBBS",
+        experience: "5 years",
+        consultationFee: 1000,
+        specialisation: "Cardiology"
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.errors[0].msg).toBe("Bio is required");
+  });
+
+  it("should reject missing consultation fee", async () => {
+    const res = await request(app)
+      .put("/api/doctor/profile")
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({
+        bio: "Test bio",
+        qualifications: "MBBS",
+        experience: "5 years",
+        specialisation: "Cardiology"
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.errors[0].msg).toBe("Consultation fee is required");
   });
 });
 

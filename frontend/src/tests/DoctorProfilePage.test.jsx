@@ -57,11 +57,11 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio')).toBeDefined()
-      expect(screen.getByLabelText('Qualifications')).toBeDefined()
-      expect(screen.getByLabelText('Experience (Years)')).toBeDefined()
-      expect(screen.getByLabelText('Specialization')).toBeDefined()
-      expect(screen.getByLabelText('Consultation Fee (Rs)')).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
+      expect(screen.getByLabelText(/Qualifications/)).toBeDefined()
+      expect(screen.getByLabelText(/Experience/)).toBeDefined()
+      expect(screen.getByLabelText(/Specialization/)).toBeDefined()
+      expect(screen.getByLabelText(/Consultation Fee/)).toBeDefined()
     })
   })
 
@@ -70,10 +70,10 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio').value).toBe('Experienced cardiologist')
-      expect(screen.getByLabelText('Qualifications').value).toBe('MBBS, MD Cardiology')
-      expect(screen.getByLabelText('Experience (Years)').value).toBe('10 years')
-      expect(screen.getByLabelText('Consultation Fee (Rs)').value).toBe('2500')
+      expect(screen.getByLabelText(/Bio/).value).toBe('Experienced cardiologist')
+      expect(screen.getByLabelText(/Qualifications/).value).toBe('MBBS, MD Cardiology')
+      expect(screen.getByLabelText(/Experience/).value).toBe('10 years')
+      expect(screen.getByLabelText(/Consultation Fee/).value).toBe('2500')
     })
   })
 
@@ -111,14 +111,14 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio')).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.change(screen.getByLabelText('Bio'), {
+    fireEvent.change(screen.getByLabelText(/Bio/), {
       target: { name: 'bio', value: 'Updated bio text' }
     })
 
-    expect(screen.getByLabelText('Bio').value).toBe('Updated bio text')
+    expect(screen.getByLabelText(/Bio/).value).toBe('Updated bio text')
   })
 
   it('should show success message on profile save for approved doctor', async () => {
@@ -129,7 +129,7 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio')).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
@@ -148,7 +148,7 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio')).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
@@ -166,7 +166,7 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio')).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
     fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
@@ -181,17 +181,17 @@ describe('DoctorProfilePage', () => {
     renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Bio').value).toBe('Experienced cardiologist')
+      expect(screen.getByLabelText(/Bio/).value).toBe('Experienced cardiologist')
     })
 
-    fireEvent.change(screen.getByLabelText('Bio'), {
+    fireEvent.change(screen.getByLabelText(/Bio/), {
       target: { name: 'bio', value: 'Changed bio' }
     })
-    expect(screen.getByLabelText('Bio').value).toBe('Changed bio')
+    expect(screen.getByLabelText(/Bio/).value).toBe('Changed bio')
 
     fireEvent.click(screen.getByRole('button', { name: 'Discard Changes' }))
 
-    expect(screen.getByLabelText('Bio').value).toBe('Experienced cardiologist')
+    expect(screen.getByLabelText(/Bio/).value).toBe('Experienced cardiologist')
   })
 
   it('should show error when profile fetch fails', async () => {
@@ -207,7 +207,7 @@ describe('DoctorProfilePage', () => {
     axios.get.mockReturnValueOnce(new Promise(() => {}))
     renderProfilePage()
 
-    expect(document.querySelector('.animate-spin')).toBeDefined()
+    expect(document.querySelector('.animate-spin')).not.toBeNull()
   })
 
   it('should render sidebar navigation links', async () => {
@@ -266,6 +266,64 @@ describe('DoctorProfilePage', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('Change profile photo')).toBeDefined()
     })
+  })
+
+  it('should show validation errors for empty required fields', async () => {
+    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Bio is required')).toBeDefined()
+      expect(screen.getByText('Qualifications is required')).toBeDefined()
+      expect(screen.getByText('Experience is required')).toBeDefined()
+      expect(screen.getByText('Specialisation is required')).toBeDefined()
+      expect(screen.getByText('Consultation fee is required')).toBeDefined()
+    })
+  })
+
+  it('should not submit form when required fields are empty', async () => {
+    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Please fill in all required fields')).toBeDefined()
+    })
+
+    expect(axios.put).not.toHaveBeenCalled()
+  })
+
+  it('should clear validation errors on discard', async () => {
+    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Bio is required')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Discard Changes' }))
+
+    expect(screen.queryByText('Bio is required')).toBeNull()
   })
 
 })

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { RiDashboardLine } from "react-icons/ri";
 import { FiCalendar, FiClock, FiUser, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import logoImg from "../assets/Logo04.PNG";
 
 export default function DoctorLayout({ children }) {
   const navigate = useNavigate();
@@ -39,10 +40,7 @@ export default function DoctorLayout({ children }) {
         {/* Logo + close button */}
         <div>
           <div className="px-6 py-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">
-              <span className="text-blue-600">♦ Medi</span>
-              <span className="text-blue-600">Care</span>
-            </h1>
+            <img src={logoImg} alt="MediCare Logo" className="h-10" />
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-500 hover:text-gray-700"
@@ -95,7 +93,7 @@ export default function DoctorLayout({ children }) {
           >
             <FiMenu className="text-2xl" />
           </button>
-          <h1 className="text-lg font-bold text-blue-600">♦ MediCare</h1>
+          <img src={logoImg} alt="MediCare Logo" className="h-8" />
           <div className="w-8" />
         </div>
         {children}
