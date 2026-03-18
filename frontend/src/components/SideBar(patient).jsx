@@ -11,7 +11,7 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
     }`;
 
   return (
-    <div className="h-full w-64 bg-gray-100 p-6">
+    <div className="h-full w-64 bg-blue-50 p-6">
       {/* Logo */}
       <div className="flex items-center mb-10">
         <img src={logoImg} className="h-10 mr-2" />
@@ -54,9 +54,10 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
           </div>
         )}
 
-        <NavLink to="/profile" className={linkClass}>
+        <NavLink to="/patent/profile" className={linkClass}>
           <FaUser /> Profile
         </NavLink>
+
 
         <NavLink to="/logout" className={linkClass}>
           <FaSignOutAlt /> Logout
