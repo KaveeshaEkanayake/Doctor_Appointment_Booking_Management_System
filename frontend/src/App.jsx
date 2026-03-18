@@ -8,6 +8,7 @@ import DoctorProfilePage from "./pages/DoctorProfilePage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyAppointments from "./pages/MyAppointments";
+import PatientProfilePage from "./pages/PatientProfilePage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
       <Route path="/my-appointments" element={<MyAppointments />} />
+      <Route path="/patent/profile" element={<PatientProfilePage />} />
 
       {/* Doctor protected routes */}
       <Route
