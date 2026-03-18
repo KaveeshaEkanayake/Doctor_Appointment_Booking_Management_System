@@ -8,6 +8,7 @@ import DoctorProfilePage from "./pages/DoctorProfilePage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyAppointments from "./pages/MyAppointments";
+import SearchFilterDoctors from "./pages/SearchFilterDoctors";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
       <Route path="/my-appointments" element={<MyAppointments />} />
+      <Route path="/search-doctors" element={<SearchFilterDoctors />} />        
 
       {/* Doctor protected routes */}
       <Route
@@ -43,7 +45,7 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-      />
+      />      
     </Routes>
   );
 }
