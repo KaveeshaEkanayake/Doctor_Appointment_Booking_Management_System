@@ -8,11 +8,8 @@ import DoctorProfilePage from "./pages/DoctorProfilePage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyAppointments from "./pages/MyAppointments";
-<<<<<<< HEAD
 import SearchFilterDoctors from "./pages/SearchFilterDoctors";
-=======
 import PatientProfilePage from "./pages/PatientProfilePage";
->>>>>>> 0d8d42583ee9a984ec6d5cdcdc6f1638c1173108
 
 function App() {
   return (
@@ -23,11 +20,8 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
       <Route path="/my-appointments" element={<MyAppointments />} />
-<<<<<<< HEAD
-      <Route path="/search-doctors" element={<SearchFilterDoctors />} />        
-=======
+      <Route path="/search-doctors" element={<SearchFilterDoctors />} />  
       <Route path="/patent/profile" element={<PatientProfilePage />} />
->>>>>>> 0d8d42583ee9a984ec6d5cdcdc6f1638c1173108
 
       {/* Doctor protected routes */}
       <Route
