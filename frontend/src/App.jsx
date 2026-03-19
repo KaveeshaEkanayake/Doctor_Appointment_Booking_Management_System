@@ -12,7 +12,8 @@ import PatientProfilePage     from "./pages/PatientProfilePage";
 import AdminLoginPage         from "./pages/AdminLoginPage";
 import AdminDashboardPage     from "./pages/AdminDashboardPage";
 import AdminDoctorsPage       from "./pages/AdminDoctorsPage";
-import HomePage               from "./assets/HomePage";
+import HomePage from "./pages/Homepage";
+
 
 function App() {
   return (
