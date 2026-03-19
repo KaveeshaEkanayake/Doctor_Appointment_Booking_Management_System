@@ -1,21 +1,24 @@
-import prisma from "../src/lib/prisma.js";  // ← reuse your adapter-based client
-import bcrypt from "bcryptjs";
+import prisma from "../src/lib/prisma.js";
+import bcryptjs from "bcryptjs";
 
 async function main() {
-  const hashed = await bcrypt.hash("Admin@1234", 10);
+  const email    = process.env.ADMIN_EMAIL    || "admin@dams.com";
+  const password = process.env.ADMIN_PASSWORD || "Admin@1234";
+
+  const hashed = await bcryptjs.hash(password, 10);
 
   await prisma.admin.upsert({
-    where:  { email: "admin@dams.com" },
+    where:  { email },
     update: {},
     create: {
-      email:     "admin@dams.com",
+      email,
       password:  hashed,
       firstName: "Admin",
       lastName:  "User",
     },
   });
 
-  console.log("✅ Admin seeded → admin@dams.com / Admin@1234");
+  console.log(`✅ Admin seeded → ${email}`);  
 }
 
 main()
