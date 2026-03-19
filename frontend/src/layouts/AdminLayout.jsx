@@ -53,7 +53,7 @@ export default function AdminLayout({ children }) {
             </button>
           </div>
 
-          {/* Active nav items */}
+          {/* Active nav */}
           <nav className="mt-2 flex flex-col gap-1 px-3">
             {activeNavItems.map((item) => (
               <NavLink
@@ -76,7 +76,7 @@ export default function AdminLayout({ children }) {
             {/* Divider */}
             <div className="my-2 border-t border-gray-100" />
 
-            {/* Coming soon — greyed out, not clickable */}
+            {/* Coming soon */}
             {comingSoonItems.map((item) => (
               <div
                 key={item.label}

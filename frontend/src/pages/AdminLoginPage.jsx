@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex h-screen bg-[#F6FAFF]">
-      {/* Left panel — identical to LoginPage */}
+      {/* Left panel */}
       <div className="hidden md:flex w-2/4 mt-[160px]">
         <div className="flex h-full bg-blue-50">
           <div className="absolute top-14 left-60 flex items-center space-x-2">
@@ -82,7 +82,7 @@ export default function AdminLoginPage() {
             <input
               id="password"
               type="password"
-              placeholder="* * * * * * * * * * * "
+              placeholder="* * * * * * * * * * *"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full mb-4 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
