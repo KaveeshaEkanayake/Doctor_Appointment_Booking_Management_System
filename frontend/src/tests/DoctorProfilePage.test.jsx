@@ -12,7 +12,6 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-// Account APPROVED + profile APPROVED — fully live
 const mockProfile = {
   id: 1,
   firstName: "Kaveesha",
@@ -79,7 +78,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // profile APPROVED → "Your profile is live"
   it('should show approved status banner when profile is approved', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
     renderProfilePage()
@@ -89,7 +87,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // account PENDING → locked banner
   it('should show pending status banner for pending doctor', async () => {
     const pendingDoctor = { ...mockProfile, status: "PENDING", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: pendingDoctor } })
@@ -100,7 +97,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // account REJECTED
   it('should show rejected status banner for rejected doctor', async () => {
     const rejectedDoctor = { ...mockProfile, status: "REJECTED", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: rejectedDoctor } })
@@ -111,7 +107,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // profile PENDING_REVIEW → under review banner
   it('should show under review banner when profile is pending review', async () => {
     const reviewDoctor = { ...mockProfile, profileStatus: "PENDING_REVIEW" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: reviewDoctor } })
@@ -122,7 +117,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // profile REJECTED → rejected banner
   it('should show profile rejected banner when profile is rejected', async () => {
     const rejectedProfile = { ...mockProfile, profileStatus: "REJECTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: rejectedProfile } })
@@ -133,7 +127,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // NOT_SUBMITTED → fill in your profile banner
   it('should show not submitted banner when profile is not submitted', async () => {
     const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
@@ -159,7 +152,6 @@ describe('DoctorProfilePage', () => {
     expect(screen.getByLabelText(/Bio/).value).toBe('Updated bio text')
   })
 
-  // approved doctor submits → "submitted for review"
   it('should show success message on profile submit for approved doctor', async () => {
     const approvedNotSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: approvedNotSubmitted } })
@@ -183,7 +175,6 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  // form is locked when account is PENDING
   it('should lock form when account is pending', async () => {
     const pendingDoctor = { ...mockProfile, status: "PENDING", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: pendingDoctor } })
@@ -196,7 +187,6 @@ describe('DoctorProfilePage', () => {
     expect(screen.getByLabelText(/Bio/).disabled).toBe(true)
   })
 
-  // form is locked when profile is PENDING_REVIEW
   it('should lock form when profile is under review', async () => {
     const reviewDoctor = { ...mockProfile, profileStatus: "PENDING_REVIEW" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: reviewDoctor } })
@@ -213,7 +203,7 @@ describe('DoctorProfilePage', () => {
     const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
     axios.put.mockRejectedValueOnce({
-      response: { data: { message: "Internal server error" } }
+      response: { data: { message: "Failed to update profile. Please try again." } }
     })
     renderProfilePage()
 
@@ -224,7 +214,7 @@ describe('DoctorProfilePage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to update profile/)).toBeDefined()
+      expect(screen.getByText(/Failed to update profile. Please try again./)).toBeDefined()
     })
   })
 
