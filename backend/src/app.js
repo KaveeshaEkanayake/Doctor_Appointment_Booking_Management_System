@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.routes.js";
 import doctorRoutes from "./routes/doctor.routes.js";
 import doctorProtectedRoutes from "./routes/doctor.protected.routes.js";
 import doctorPublicRoutes from "./routes/doctor.public.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -26,5 +27,8 @@ app.use("/api/doctor", doctorProtectedRoutes);
 
 // Public doctor routes (no auth)
 app.use("/api/doctors", doctorPublicRoutes);
+
+// Admin routes
+app.use("/api/admin", adminRoutes);
 
 export default app;
