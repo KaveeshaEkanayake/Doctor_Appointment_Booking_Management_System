@@ -17,14 +17,15 @@ model Patient {
 }
 
 model Doctor {
-  id             Int      @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   firstName      String
   lastName       String
-  email          String   @unique
+  email          String        @unique
   password       String
   phone          String
   specialisation String
-  status         Status   @default(PENDING)
+  status         Status        @default(PENDING)
+  profileStatus  ProfileStatus @default(NOT_SUBMITTED)
 
   // Profile fields (DAMS-20)
   profilePhoto    String?
@@ -42,7 +43,7 @@ model Doctor {
 }
 
 model Availability {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   doctorId  Int
   day       Day
   startTime String
@@ -57,8 +58,25 @@ model Availability {
   @@unique([doctorId, day, startTime, endTime])
 }
 
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
 enum Status {
   PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProfileStatus {
+  NOT_SUBMITTED
+  PENDING_REVIEW
   APPROVED
   REJECTED
 }

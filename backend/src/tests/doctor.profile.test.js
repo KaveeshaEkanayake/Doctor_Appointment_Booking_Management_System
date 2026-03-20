@@ -15,13 +15,14 @@ beforeAll(async () => {
   const hashedPassword = await bcrypt.hash("Test1234", 10);
   const doctor = await prisma.doctor.create({
     data: {
-      firstName: "Test",
-      lastName: "Doctor",
-      email: "profiletest@doctor.com",
-      password: hashedPassword,
-      phone: "0771234567",
-      specialisation: "Cardiology",
-      status: "APPROVED"
+      firstName:     "Test",
+      lastName:      "Doctor",
+      email:         "profiletest@doctor.com",
+      password:      hashedPassword,
+      phone:         "0771234567",
+      specialisation:"Cardiology",
+      status:        "APPROVED",
+      profileStatus: "APPROVED",   // ← NEW: required for public endpoints + PUT
     }
   });
 
@@ -41,11 +42,11 @@ afterAll(async () => {
 });
 
 const validProfileData = {
-  bio: "Experienced cardiologist with 10 years of practice",
-  qualifications: "MBBS, MD Cardiology",
-  experience: "10 years",
+  bio:             "Experienced cardiologist with 10 years of practice",
+  qualifications:  "MBBS, MD Cardiology",
+  experience:      "10 years",
   consultationFee: 2500,
-  specialisation: "Cardiology"
+  specialisation:  "Cardiology"
 };
 
 describe("GET /api/doctor/profile", () => {
@@ -105,13 +106,19 @@ describe("PUT /api/doctor/profile", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.message).toBe("Profile updated successfully");
+    expect(res.body.message).toBe("Profile submitted for review successfully."); // ← updated
     expect(res.body.doctor.bio).toBe("Experienced cardiologist with 10 years of practice");
     expect(res.body.doctor.qualifications).toBe("MBBS, MD Cardiology");
     expect(res.body.doctor.consultationFee).toBe(2500);
   });
 
   it("should update profile photo with valid URL", async () => {
+    // Reset profileStatus to APPROVED so PUT is not blocked
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
@@ -128,6 +135,11 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should reject invalid profile photo URL", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
@@ -141,6 +153,11 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should reject negative consultation fee", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
@@ -154,15 +171,20 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should update bio while keeping other fields", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
-        bio: "Updated bio only",
-        qualifications: "MBBS, MD Cardiology",
-        experience: "10 years",
+        bio:             "Updated bio only",
+        qualifications:  "MBBS, MD Cardiology",
+        experience:      "10 years",
         consultationFee: 2500,
-        specialisation: "Cardiology"
+        specialisation:  "Cardiology"
       });
 
     expect(res.status).toBe(200);
@@ -181,6 +203,11 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should reject empty required fields", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
@@ -192,14 +219,19 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should reject missing bio", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
-        qualifications: "MBBS",
-        experience: "5 years",
+        qualifications:  "MBBS",
+        experience:      "5 years",
         consultationFee: 1000,
-        specialisation: "Cardiology"
+        specialisation:  "Cardiology"
       });
 
     expect(res.status).toBe(400);
@@ -208,14 +240,19 @@ describe("PUT /api/doctor/profile", () => {
   });
 
   it("should reject missing consultation fee", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app)
       .put("/api/doctor/profile")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({
-        bio: "Test bio",
-        qualifications: "MBBS",
-        experience: "5 years",
-        specialisation: "Cardiology"
+        bio:           "Test bio",
+        qualifications:"MBBS",
+        experience:    "5 years",
+        specialisation:"Cardiology"
       });
 
     expect(res.status).toBe(400);
@@ -226,6 +263,12 @@ describe("PUT /api/doctor/profile", () => {
 
 describe("GET /api/doctors (public)", () => {
   it("should return only approved doctors", async () => {
+    // Ensure test doctor has profileStatus APPROVED for public listing
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app).get("/api/doctors");
 
     expect(res.status).toBe(200);
@@ -252,6 +295,11 @@ describe("GET /api/doctors (public)", () => {
 
 describe("GET /api/doctors/:id (public)", () => {
   it("should return a single approved doctor profile", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app).get(`/api/doctors/${doctorId}`);
 
     expect(res.status).toBe(200);
@@ -269,6 +317,11 @@ describe("GET /api/doctors/:id (public)", () => {
   });
 
   it("should not expose password in public profile", async () => {
+    await prisma.doctor.update({
+      where: { id: doctorId },
+      data:  { profileStatus: "APPROVED" }
+    });
+
     const res = await request(app).get(`/api/doctors/${doctorId}`);
 
     expect(res.status).toBe(200);
@@ -279,13 +332,14 @@ describe("GET /api/doctors/:id (public)", () => {
     const hashedPassword = await bcrypt.hash("Test1234", 10);
     const pendingDoctor = await prisma.doctor.create({
       data: {
-        firstName: "Pending",
-        lastName: "Doctor",
-        email: "pending-profile@doctor.com",
-        password: hashedPassword,
-        phone: "0779999999",
+        firstName:      "Pending",
+        lastName:       "Doctor",
+        email:          "pending-profile@doctor.com",
+        password:       hashedPassword,
+        phone:          "0779999999",
         specialisation: "Dermatology",
-        status: "PENDING"
+        status:         "PENDING",
+        profileStatus:  "NOT_SUBMITTED",
       }
     });
 

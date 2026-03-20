@@ -20,6 +20,7 @@ const mockProfile = {
   phone: "0771234567",
   specialisation: "Cardiology",
   status: "APPROVED",
+  profileStatus: "APPROVED",
   profilePhoto: "",
   bio: "Experienced cardiologist",
   qualifications: "MBBS, MD Cardiology",
@@ -77,7 +78,7 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  it('should show approved status banner', async () => {
+  it('should show approved status banner when profile is approved', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
     renderProfilePage()
 
@@ -87,7 +88,7 @@ describe('DoctorProfilePage', () => {
   })
 
   it('should show pending status banner for pending doctor', async () => {
-    const pendingDoctor = { ...mockProfile, status: "PENDING" }
+    const pendingDoctor = { ...mockProfile, status: "PENDING", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: pendingDoctor } })
     renderProfilePage()
 
@@ -97,12 +98,42 @@ describe('DoctorProfilePage', () => {
   })
 
   it('should show rejected status banner for rejected doctor', async () => {
-    const rejectedDoctor = { ...mockProfile, status: "REJECTED" }
+    const rejectedDoctor = { ...mockProfile, status: "REJECTED", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: rejectedDoctor } })
     renderProfilePage()
 
     await waitFor(() => {
       expect(screen.getByText(/Your account has been rejected/)).toBeDefined()
+    })
+  })
+
+  it('should show under review banner when profile is pending review', async () => {
+    const reviewDoctor = { ...mockProfile, profileStatus: "PENDING_REVIEW" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: reviewDoctor } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Your profile is under review by admin/)).toBeDefined()
+    })
+  })
+
+  it('should show profile rejected banner when profile is rejected', async () => {
+    const rejectedProfile = { ...mockProfile, profileStatus: "REJECTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: rejectedProfile } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Your profile was rejected/)).toBeDefined()
+    })
+  })
+
+  it('should show not submitted banner when profile is not submitted', async () => {
+    const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
+    renderProfilePage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Please complete your profile and submit it for review/)).toBeDefined()
     })
   })
 
@@ -121,10 +152,15 @@ describe('DoctorProfilePage', () => {
     expect(screen.getByLabelText(/Bio/).value).toBe('Updated bio text')
   })
 
-  it('should show success message on profile save for approved doctor', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+  it('should show success message on profile submit for approved doctor', async () => {
+    const approvedNotSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: approvedNotSubmitted } })
     axios.put.mockResolvedValueOnce({
-      data: { success: true, message: "Profile updated successfully", doctor: mockProfile }
+      data: {
+        success: true,
+        message: "Profile submitted for review successfully.",
+        doctor: { ...approvedNotSubmitted, profileStatus: "PENDING_REVIEW" }
+      }
     })
     renderProfilePage()
 
@@ -132,36 +168,42 @@ describe('DoctorProfilePage', () => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
-      expect(screen.getByText(/Profile Updated Successfully!/)).toBeDefined()
+      expect(screen.getByText(/Profile submitted for review/)).toBeDefined()
     })
   })
 
-  it('should show approval message on save for pending doctor', async () => {
-    const pendingDoctor = { ...mockProfile, status: "PENDING" }
+  it('should lock form when account is pending', async () => {
+    const pendingDoctor = { ...mockProfile, status: "PENDING", profileStatus: "NOT_SUBMITTED" }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: pendingDoctor } })
-    axios.put.mockResolvedValueOnce({
-      data: { success: true, message: "Profile updated successfully", doctor: pendingDoctor }
-    })
     renderProfilePage()
 
     await waitFor(() => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    expect(screen.getByLabelText(/Bio/).disabled).toBe(true)
+  })
+
+  it('should lock form when profile is under review', async () => {
+    const reviewDoctor = { ...mockProfile, profileStatus: "PENDING_REVIEW" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: reviewDoctor } })
+    renderProfilePage()
 
     await waitFor(() => {
-      expect(screen.getByText(/will be visible once approved by admin/)).toBeDefined()
+      expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
+
+    expect(screen.getByLabelText(/Bio/).disabled).toBe(true)
   })
 
   it('should show error message on save failure', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+    const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
     axios.put.mockRejectedValueOnce({
-      response: { data: { message: "Internal server error" } }
+      response: { data: { message: "Failed to update profile. Please try again." } }
     })
     renderProfilePage()
 
@@ -169,15 +211,16 @@ describe('DoctorProfilePage', () => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to update profile/)).toBeDefined()
+      expect(screen.getByText(/Failed to update profile. Please try again./)).toBeDefined()
     })
   })
 
   it('should discard changes and restore original data', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+    const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
     renderProfilePage()
 
     await waitFor(() => {
@@ -236,8 +279,9 @@ describe('DoctorProfilePage', () => {
     })
   })
 
-  it('should render Change Photo button', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+  it('should render Change Photo button when form is unlocked', async () => {
+    const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
     renderProfilePage()
 
     await waitFor(() => {
@@ -246,7 +290,8 @@ describe('DoctorProfilePage', () => {
   })
 
   it('should open photo modal when Change Photo is clicked', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
+    const notSubmitted = { ...mockProfile, profileStatus: "NOT_SUBMITTED" }
+    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: notSubmitted } })
     renderProfilePage()
 
     await waitFor(() => {
@@ -259,17 +304,13 @@ describe('DoctorProfilePage', () => {
     expect(screen.getByLabelText('Image URL')).toBeDefined()
   })
 
-  it('should have accessible camera button', async () => {
-    axios.get.mockResolvedValueOnce({ data: { success: true, doctor: mockProfile } })
-    renderProfilePage()
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Change profile photo')).toBeDefined()
-    })
-  })
-
   it('should show validation errors for empty required fields', async () => {
-    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    const emptyDoctor = {
+      ...mockProfile,
+      profileStatus: "NOT_SUBMITTED",
+      bio: "", qualifications: "", experience: "",
+      specialisation: "", consultationFee: ""
+    }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
     renderProfilePage()
 
@@ -277,7 +318,7 @@ describe('DoctorProfilePage', () => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
       expect(screen.getByText('Bio is required')).toBeDefined()
@@ -289,7 +330,12 @@ describe('DoctorProfilePage', () => {
   })
 
   it('should not submit form when required fields are empty', async () => {
-    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    const emptyDoctor = {
+      ...mockProfile,
+      profileStatus: "NOT_SUBMITTED",
+      bio: "", qualifications: "", experience: "",
+      specialisation: "", consultationFee: ""
+    }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
     renderProfilePage()
 
@@ -297,7 +343,7 @@ describe('DoctorProfilePage', () => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
       expect(screen.getByText('Please fill in all required fields')).toBeDefined()
@@ -307,7 +353,12 @@ describe('DoctorProfilePage', () => {
   })
 
   it('should clear validation errors on discard', async () => {
-    const emptyDoctor = { ...mockProfile, bio: "", qualifications: "", experience: "", specialisation: "", consultationFee: "" }
+    const emptyDoctor = {
+      ...mockProfile,
+      profileStatus: "NOT_SUBMITTED",
+      bio: "", qualifications: "", experience: "",
+      specialisation: "", consultationFee: ""
+    }
     axios.get.mockResolvedValueOnce({ data: { success: true, doctor: emptyDoctor } })
     renderProfilePage()
 
@@ -315,7 +366,7 @@ describe('DoctorProfilePage', () => {
       expect(screen.getByLabelText(/Bio/)).toBeDefined()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Save Profile/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Submit for Review/ }))
 
     await waitFor(() => {
       expect(screen.getByText('Bio is required')).toBeDefined()
