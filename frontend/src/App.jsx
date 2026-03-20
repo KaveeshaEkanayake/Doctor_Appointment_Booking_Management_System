@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import MyAppointments from "./pages/MyAppointments";
 import SearchFilterDoctors from "./pages/SearchFilterDoctors";
 import PatientProfilePage from "./pages/PatientProfilePage";
+import BrowseDoctors from "./pages/BrowseDoctors";
 import ProtectedRoute         from "./components/ProtectedRoute";
 import MyAppointments         from "./pages/MyAppointments";
 import PatientProfilePage     from "./pages/PatientProfilePage";
@@ -26,7 +27,9 @@ function App() {
       <Route path="/register"        element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
       <Route path="/my-appointments" element={<MyAppointments />} />
-      <Route path="/search-doctors" element={<SearchFilterDoctors />} />  
+      <Route path="/search-doctors" element={<SearchFilterDoctors />} />
+      <Route path="/browse-doctors" element={<BrowseDoctors />} /> 
+      <Route path="/search-doctors" element={<SearchFilterDoctors />} /> 
       <Route path="/patent/profile" element={<PatientProfilePage />} />
       <Route path="/patient/profile" element={<PatientProfilePage />} />
 
