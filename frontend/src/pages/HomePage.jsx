@@ -1,5 +1,3 @@
-
-
 import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Background from "../assets/Background.png";
@@ -74,7 +72,7 @@ export default function HomePage() {
         { name: "Pediatric", img: Pediatrist, icon: Baby },
 
         { name: "Test 1", img: Urology, icon: Activity },
-        { name: "Test 2", img: Urology, icon: Activity },
+        { name: "Test 22", img: Urology, icon: Activity },
         { name: "Test 3", img: Urology, icon: Activity },
         { name: "Test 4", img: Urology, icon: Activity },
     ];
