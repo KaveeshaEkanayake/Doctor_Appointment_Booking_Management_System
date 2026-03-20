@@ -14,7 +14,7 @@ function BrowseDoctors() {
     Gastroenterologist: "border-orange-500 text-orange-600",
   };
 
-  // Filter doctors by search input
+  // Filter doctors by Search Input
   const filteredDoctors = doctors.filter((doc) =>
     doc.name.toLowerCase().includes(search.toLowerCase())
   );
