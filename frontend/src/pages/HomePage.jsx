@@ -3,8 +3,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Background from "../assets/Background.png";
-import DoctorHero from "../assets/DoctorHero.png";
 import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 
 import Urology from "../assets/Urology.png";
 import Orthopedic from "../assets/Orthopedic.png";
@@ -23,6 +23,8 @@ import FAQ from "../assets/FAQ.png";
 import { HeartPulse, Bone, Brain, Baby, Stethoscope, Activity } from "lucide-react";
 
 export default function HomePage() {
+    const navigate = useNavigate();
+    const [showAllSpecialities, setShowAllSpecialities] = useState(false);
 
     const scrollRef = useRef(null);
     const doctorRef = useRef(null);
@@ -103,7 +105,10 @@ export default function HomePage() {
                             advanced technologies and top-quality facilities right here.
                         </p>
 
-                        <button className="mt-6 bg-blue-500 text-white px-6 py-3 md:py-4 rounded-full w-full md:w-auto">
+                        <button
+                            onClick={() => navigate("/appointments")}
+                            className="mt-6 bg-blue-500 text-white px-6 py-3 md:py-4 rounded-full w-full md:w-auto"
+                        >
                             Book Appointment
                         </button>
 
@@ -119,7 +124,7 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                
+
                 </section>
             </div>
 
@@ -134,48 +139,78 @@ export default function HomePage() {
                         </h3>
                         <p className="text-sm text-gray-500">
                             Simply browse through our extensive list of trusted doctors,
-                            schedule your appointment <br/> hassle-free.
+                            schedule your appointment <br /> hassle-free.
                         </p>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button onClick={scrollLeft} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">‹</button>
-                        <button onClick={scrollRight} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">›</button>
-                    </div>
+                    {!showAllSpecialities && (
+                        <div className="flex gap-3">
+                            <button onClick={scrollLeft} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">‹</button>
+                            <button onClick={scrollRight} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">›</button>
+                        </div>
+                    )}
 
                 </div>
 
-                <div className="flex justify-center">
-                    <div
-                        ref={scrollRef}
-                        className="flex gap-8 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory mt-8"
-                        style={{
-                            maxWidth: "calc(5 * 180px + 4 * 24px)",
-                            scrollbarWidth: "none",      // Firefox
-                            msOverflowStyle: "none"      // IE/Edge
-                        }}
-                    >
-                        <style>
-                            {`
-                                div::-webkit-scrollbar {
-                                    display: none;
-                                }
-                            `}
-                        </style>
+                {/* SLIDER VIEW */}
+                {!showAllSpecialities && (
+                    <div className="flex justify-center">
+                        <div
+                            ref={scrollRef}
+                            className="flex gap-8 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory mt-8"
+                            style={{
+                                maxWidth: "calc(5 * 180px + 4 * 24px)",
+                                scrollbarWidth: "none",
+                                msOverflowStyle: "none"
+                            }}
+                        >
+                            <style>
+                                {`
+                        div::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}
+                            </style>
 
+                            {specialities.map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="min-w-[180px] snap-start h-[260px] rounded-2xl overflow-hidden cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-300 group relative hover:scale-105"
+                                    style={{
+                                        backgroundImage: `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.4)), url(${item.img})`,
+                                        backgroundSize: "cover",
+                                        backgroundPosition: "center",
+                                    }}
+                                >
+                                    <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300"></div>
+
+                                    <div className="w-12 h-12 flex items-center justify-center rounded-xl mb-4 bg-white/90 text-blue-600 relative z-10 group-hover:bg-white">
+                                        <item.icon size={24} strokeWidth={2.2} />
+                                    </div>
+
+                                    <p className="font-medium relative z-10">{item.name}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* GRID VIEW */}
+                {showAllSpecialities && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 px-4 md:px-10 mt-8">
                         {specialities.map((item, i) => (
                             <div
                                 key={i}
-                                className="min-w-[180px] snap-start h-[260px] rounded-2xl overflow-hidden cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-300 group relative hover:scale-105"
+                                className="h-[200px] rounded-2xl overflow-hidden cursor-pointer flex flex-col items-center justify-center text-white transition-all duration-300 hover:scale-105 relative"
                                 style={{
                                     backgroundImage: `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.4)), url(${item.img})`,
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                 }}
                             >
-                                <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-70 transition-opacity duration-300"></div>
+                                <div className="absolute inset-0 bg-blue-600 opacity-0 hover:opacity-70 transition-opacity duration-300"></div>
 
-                                <div className="w-12 h-12 flex items-center justify-center rounded-xl mb-4 bg-white/90 text-blue-600 relative z-10 group-hover:bg-white">
+                                <div className="w-12 h-12 flex items-center justify-center rounded-xl mb-4 bg-white/90 text-blue-600 relative z-10">
                                     <item.icon size={24} strokeWidth={2.2} />
                                 </div>
 
@@ -183,13 +218,17 @@ export default function HomePage() {
                             </div>
                         ))}
                     </div>
-                </div>
+                )}
 
                 <div className="flex justify-center mt-8">
-                    <button className="bg-blue-600 text-white px-6 py-2 rounded-full">
-                        See All Specialties
+                    <button
+                        onClick={() => setShowAllSpecialities(!showAllSpecialities)}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-full"
+                    >
+                        {showAllSpecialities ? "Show Less" : "See All Specialities"}
                     </button>
                 </div>
+
             </section>
 
             {/* DOCTORS SECTION */}
