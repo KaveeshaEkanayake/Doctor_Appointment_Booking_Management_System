@@ -16,7 +16,7 @@ import Db from "../assets/Db.png";
 import Dc from "../assets/Dc.png";
 import Dd from "../assets/Dd.png";
 import Banner2 from "../assets/Banner2.png";
-import FAQ from "../assets/FAQ.png";
+import faq from "../assets/faq.png";
 
 import { HeartPulse, Bone, Brain, Baby, Stethoscope, Activity } from "lucide-react";
 
@@ -314,7 +314,7 @@ export default function HomePage() {
                     {/* LEFT IMAGE */}
                     <div className="flex justify-center md:sticky md:top-10 h-fit">
                         <img
-                            src={FAQ}
+                            src={faq}
                             alt="FAQ"
                             className="w-full max-w-md object-contain"
                         />
