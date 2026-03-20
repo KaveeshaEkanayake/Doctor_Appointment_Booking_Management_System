@@ -17,6 +17,7 @@ import PatientProfilePage     from "./pages/PatientProfilePage";
 import AdminLoginPage         from "./pages/AdminLoginPage";
 import AdminDashboardPage     from "./pages/AdminDashboardPage";
 import AdminDoctorsPage       from "./pages/AdminDoctorsPage";
+import IncomingAppointments from "./pages/IncomingAppointments";
 
 function App() {
   return (
@@ -78,7 +79,16 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-      />      
+      /> 
+       
+      <Route
+        path="/doctor/appointments"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <IncomingAppointments />
+          </ProtectedRoute>
+        }
+      />        
     </Routes>
   );
 }
