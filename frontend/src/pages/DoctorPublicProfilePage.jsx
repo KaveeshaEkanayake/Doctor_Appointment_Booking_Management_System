@@ -61,6 +61,13 @@ const getNext7Days = () => {
   return days;
 };
 
+const getLocalDateStr = (date) => {
+  const year  = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day   = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function DoctorPublicProfilePage() {
   const { id }   = useParams();
   const navigate = useNavigate();
@@ -72,6 +79,7 @@ export default function DoctorPublicProfilePage() {
   const [error,               setError]               = useState("");
   const [selectedDay,         setSelectedDay]         = useState(null);
   const [selectedSlot,        setSelectedSlot]        = useState(null);
+  const [bookedSlots,         setBookedSlots]         = useState([]);
 
   const token     = localStorage.getItem("token");
   const role      = localStorage.getItem("role");
@@ -86,13 +94,10 @@ export default function DoctorPublicProfilePage() {
           axios.get(`${API}/api/doctors/${id}`),
           axios.get(`${API}/api/doctors/${id}/availability`),
         ]);
-
         setDoctor(docRes.data.doctor);
-
         const availabilityData = availRes.data.availability ?? [];
         setAvailability(availabilityData);
         setAppointmentDuration(availRes.data.appointmentDuration ?? 30);
-
         const firstAvail = next7Days.find((d) =>
           availabilityData.some((a) => a.day === d.full)
         );
@@ -106,12 +111,40 @@ export default function DoctorPublicProfilePage() {
     fetchData();
   }, [id]);
 
+  // Fetch booked slots when selected day changes
+  useEffect(() => {
+    if (!selectedDay || !id) return;
+
+    const dayIndex = next7Days.findIndex(d => d.abbr === selectedDay.abbr);
+    const date     = new Date();
+    date.setDate(date.getDate() + dayIndex);
+    const dateStr  = getLocalDateStr(date);
+
+    axios.get(`${API}/api/appointments/booked-slots/${id}/${dateStr}`)
+      .then(res => setBookedSlots(res.data.bookedSlots ?? []))
+      .catch(() => setBookedSlots([]));
+  }, [selectedDay, id]);
+
   const handleBookAppointment = () => {
-    if (!token)            { navigate("/login"); return; }
+    if (!token) { navigate("/login"); return; }
     if (role === "doctor") { alert("Please use a patient account to book appointments."); return; }
     if (role === "admin")  { alert("Admins cannot book appointments."); return; }
+    if (!selectedDay)      { alert("Please select a day first."); return; }
     if (!selectedSlot)     { alert("Please select a time slot first."); return; }
-    navigate("/appointments/book", { state: { doctorId: id, selectedDay, selectedSlot } });
+
+    const dayIndex = next7Days.findIndex(d => d.abbr === selectedDay.abbr);
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() + dayIndex);
+    const dateStr  = getLocalDateStr(baseDate);
+
+    navigate("/appointments/review", {
+      state: {
+        doctorId: id,
+        date:     dateStr,
+        time:     selectedSlot,
+        reason:   "",
+      }
+    });
   };
 
   const slotsForDay = selectedDay
@@ -122,6 +155,10 @@ export default function DoctorPublicProfilePage() {
 
   const dayHasSlots = (dayFull) =>
     availability.some((a) => a.day === dayFull);
+
+  const allSlotsBooked = selectedDay &&
+    slotsForDay.length > 0 &&
+    slotsForDay.every(slot => bookedSlots.includes(slot));
 
   if (loading) {
     return (
@@ -162,30 +199,24 @@ export default function DoctorPublicProfilePage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
-      {/* ── Hero header with wave blobs ── */}
+      {/* ── Hero header ── */}
       <div className="relative bg-gradient-to-b from-blue-50 to-white overflow-hidden">
-
-        {/* Left wave blob */}
         <div className="absolute left-0 top-0 w-48 h-32 opacity-40">
           <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,0 C40,20 80,0 120,30 C160,60 180,100 200,120 L200,0 Z" fill="#BFDBFE" />
           </svg>
         </div>
-
-        {/* Right wave blob */}
         <div className="absolute right-0 top-0 w-48 h-32 opacity-40">
           <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <path d="M200,0 C160,20 120,0 80,30 C40,60 20,100 0,120 L0,0 Z" fill="#BFDBFE" />
           </svg>
         </div>
-
-        {/* Decorative dots */}
-        <div className="absolute top-6  left-32  w-2 h-2 rounded-full bg-blue-300 opacity-50" />
+        <div className="absolute top-6  left-32  w-2   h-2   rounded-full bg-blue-300 opacity-50" />
         <div className="absolute top-16 left-12  w-1.5 h-1.5 rounded-full bg-blue-200 opacity-40" />
-        <div className="absolute top-8  right-32 w-2 h-2 rounded-full bg-blue-300 opacity-50" />
+        <div className="absolute top-8  right-32 w-2   h-2   rounded-full bg-blue-300 opacity-50" />
         <div className="absolute top-20 right-16 w-1.5 h-1.5 rounded-full bg-blue-200 opacity-40" />
         <div className="absolute top-4  left-1/2 w-1.5 h-1.5 rounded-full bg-blue-200 opacity-30" />
-        <div className="absolute top-20 left-2/3 w-2 h-2 rounded-full bg-blue-300 opacity-30" />
+        <div className="absolute top-20 left-2/3 w-2   h-2   rounded-full bg-blue-300 opacity-30" />
 
         <div className="relative max-w-6xl mx-auto px-6 py-10 text-center">
           <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-4">
@@ -208,8 +239,6 @@ export default function DoctorPublicProfilePage() {
         {/* ── Profile card ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-8">
-
-            {/* Photo */}
             <div className="flex-shrink-0">
               {doctor.profilePhoto ? (
                 <img
@@ -224,7 +253,6 @@ export default function DoctorPublicProfilePage() {
               )}
             </div>
 
-            {/* Info */}
             <div className="flex-1">
               <p className="text-blue-600 text-sm font-semibold mb-1">✦ Medical Professional</p>
               <h2 className="text-3xl font-bold text-gray-800 mb-3">
@@ -304,9 +332,7 @@ export default function DoctorPublicProfilePage() {
                 <p className="text-gray-400 text-sm">No bio available.</p>
               )}
             </div>
-
             <div className="hidden md:block w-px bg-gray-200" />
-
             <div className="w-full md:w-72">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Education & Honors</h3>
               {doctor.qualifications ? (
@@ -341,8 +367,10 @@ export default function DoctorPublicProfilePage() {
             {/* Day selector */}
             <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
               {next7Days.map((d) => {
-                const hasSlots   = dayHasSlots(d.full);
-                const isSelected = selectedDay?.abbr === d.abbr;
+                const hasSlots      = dayHasSlots(d.full);
+                const isSelected    = selectedDay?.abbr === d.abbr;
+                const isFullyBooked = isSelected && allSlotsBooked;
+
                 return (
                   <button
                     key={d.abbr}
@@ -353,36 +381,58 @@ export default function DoctorPublicProfilePage() {
                     }}
                     disabled={!hasSlots}
                     className={`flex flex-col items-center px-3 py-2 rounded-xl text-xs font-semibold min-w-[52px] transition ${
-                      isSelected
+                      !hasSlots
+                        ? "bg-white text-gray-300 cursor-not-allowed border border-gray-100"
+                        : isFullyBooked
+                        ? "bg-gray-100 text-gray-400 border border-gray-200"
+                        : isSelected
                         ? "bg-blue-600 text-white shadow-sm"
-                        : hasSlots
-                        ? "bg-white text-gray-700 hover:bg-blue-50 border border-gray-200"
-                        : "bg-white text-gray-300 cursor-not-allowed border border-gray-100"
+                        : "bg-white text-gray-700 hover:bg-blue-50 border border-gray-200"
                     }`}
                   >
                     <span className="text-[10px] font-medium">{d.abbr}</span>
                     <span className="text-lg font-bold">{d.date}</span>
+                    {isFullyBooked && (
+                      <span className="text-[8px] text-gray-400 mt-0.5">Full</span>
+                    )}
                   </button>
                 );
               })}
             </div>
 
+            {/* Fully booked warning */}
+            {allSlotsBooked && (
+              <div className="bg-orange-50 border border-orange-200 text-orange-600 text-xs rounded-xl px-4 py-3 mb-4 text-center">
+                All slots for this day are fully booked. Please select another day.
+              </div>
+            )}
+
             {/* Time slots */}
             {selectedDay && slotsForDay.length > 0 ? (
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-5">
-                {slotsForDay.map((slot) => (
-                  <button
-                    key={slot}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`px-2 py-2 rounded-lg text-xs font-medium border transition ${
-                      selectedSlot === slot
-                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600"
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
+                {slotsForDay.map((slot) => {
+                  const isBooked   = bookedSlots.includes(slot);
+                  const isSelected = selectedSlot === slot;
+                  return (
+                    <button
+                      key={slot}
+                      onClick={() => { if (!isBooked) setSelectedSlot(slot); }}
+                      disabled={isBooked}
+                      className={`px-2 py-2 rounded-lg text-xs font-medium border transition ${
+                        isBooked
+                          ? "bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed"
+                          : isSelected
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600"
+                      }`}
+                    >
+                      {slot}
+                      {isBooked && (
+                        <span className="block text-[9px] text-gray-300 mt-0.5">Booked</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-6 text-gray-400 text-sm mb-5 bg-white rounded-xl border border-gray-200">
@@ -399,9 +449,11 @@ export default function DoctorPublicProfilePage() {
               A confirmation email will be sent once the doctor approves the request.
             </div>
 
+            {/* Confirm button */}
             <button
               onClick={handleBookAppointment}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
+              disabled={!!allSlotsBooked}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Confirm & Book Appointment
             </button>
