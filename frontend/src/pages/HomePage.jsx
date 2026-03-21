@@ -18,7 +18,7 @@ import Dd from "../assets/Dd.png";
 import Banner2 from "../assets/Banner2.png";
 import faq from "../assets/faq.png";
 
-import { HeartPulse, Bone, Brain, Baby, Stethoscope, Activity } from "lucide-react";
+import { FaHeartbeat, FaBone, FaBrain, FaBaby, FaStethoscope, FaRunning } from "react-icons/fa";
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -64,17 +64,17 @@ export default function HomePage() {
     }, []);
 
     const specialities = [
-        { name: "Urology", img: Urology, icon: Activity },
-        { name: "Orthopedic", img: Orthopedic, icon: Bone },
-        { name: "Cardiologist", img: Cardiologist, icon: HeartPulse },
-        { name: "Dentist", img: Dentist, icon: Stethoscope },
-        { name: "Neurology", img: Neurology, icon: Brain },
-        { name: "Pediatric", img: Pediatrist, icon: Baby },
+        { name: "Urology", img: Urology, icon: FaRunning },
+        { name: "Orthopedic", img: Orthopedic, icon: FaBone },
+        { name: "Cardiologist", img: Cardiologist, icon: FaHeartbeat },
+        { name: "Dentist", img: Dentist, icon: FaStethoscope },
+        { name: "Neurology", img: Neurology, icon: FaBrain },
+        { name: "Pediatric", img: Pediatrist, icon: FaBaby },
 
-        { name: "Test 1", img: Urology, icon: Activity },
-        { name: "Test 22", img: Urology, icon: Activity },
-        { name: "Test 3", img: Urology, icon: Activity },
-        { name: "Test 4", img: Urology, icon: Activity },
+        { name: "Test 1", img: Urology, icon: FaBone },
+        { name: "Test 22", img: Urology, icon: FaBone },
+        { name: "Test 3", img: Urology, icon: FaBaby },
+        { name: "Test 4", img: Urology, icon: FaBrain },
     ];
 
     return (

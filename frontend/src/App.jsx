@@ -15,6 +15,7 @@ import AdminDoctorsPage       from "./pages/AdminDoctorsPage";
 import DoctorsPage            from "./pages/DoctorsPage";
 import AboutPage              from "./pages/AboutPage";
 import ContactPage            from "./pages/ContactPage";
+import HomePage               from "./pages/Homepage";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <Route path="/doctors"         element={<DoctorsPage />} />
       <Route path="/about"           element={<AboutPage />} />
       <Route path="/contact"         element={<ContactPage />} />
+      <Route path="/homepage"         element={<HomePage />} />
 
       {/* Admin public */}
       <Route path="/admin/login"     element={<AdminLoginPage />} />
