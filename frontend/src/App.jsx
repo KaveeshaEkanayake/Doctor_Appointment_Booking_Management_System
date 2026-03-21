@@ -6,16 +6,16 @@ import DoctorRegistration     from "./pages/DoctorRegistration";
 import DoctorDashboard        from "./pages/DoctorDashboard";
 import DoctorProfilePage      from "./pages/DoctorProfilePage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import MyAppointments from "./pages/MyAppointments";
-import SearchFilterDoctors from "./pages/SearchFilterDoctors";
-import PatientProfilePage from "./pages/PatientProfilePage";
-import BrowseDoctors from "./pages/BrowseDoctors";
+import ProtectedRoute         from "./components/ProtectedRoute";
+import MyAppointments         from "./pages/MyAppointments";
+import PatientProfilePage     from "./pages/PatientProfilePage";
 import AdminLoginPage         from "./pages/AdminLoginPage";
 import AdminDashboardPage     from "./pages/AdminDashboardPage";
 import AdminDoctorsPage       from "./pages/AdminDoctorsPage";
-import HomePage from "./pages/Homepage";
-
+import DoctorsPage            from "./pages/DoctorsPage";
+import AboutPage              from "./pages/AboutPage";
+import ContactPage            from "./pages/ContactPage";
+import HomePage               from "./pages/HomePage";
 
 function App() {
   return (
@@ -26,16 +26,14 @@ function App() {
       <Route path="/register"        element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
       <Route path="/my-appointments" element={<MyAppointments />} />
-      <Route path="/search-doctors" element={<SearchFilterDoctors />} />
-      <Route path="/browse-doctors" element={<BrowseDoctors />} /> 
-      <Route path="/search-doctors" element={<SearchFilterDoctors />} /> 
-      <Route path="/patent/profile" element={<PatientProfilePage />} />
       <Route path="/patient/profile" element={<PatientProfilePage />} />
-      <Route path="/homepage" element={<HomePage />} />
-
+      <Route path="/doctors"         element={<DoctorsPage />} />
+      <Route path="/about"           element={<AboutPage />} />
+      <Route path="/contact"         element={<ContactPage />} />
+      <Route path="/homepage"         element={<HomePage />} />
 
       {/* Admin public */}
-      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/login"     element={<AdminLoginPage />} />
 
       {/* Admin protected */}
       <Route
@@ -79,7 +77,7 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-      />      
+      />
     </Routes>
   );
 }
