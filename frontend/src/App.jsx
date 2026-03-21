@@ -16,7 +16,7 @@ import DoctorsPage              from "./pages/DoctorsPage";
 import DoctorPublicProfilePage  from "./pages/DoctorPublicProfilePage";
 import AboutPage                from "./pages/AboutPage";
 import ContactPage              from "./pages/ContactPage";
-import HomePage from "./pages/Homepage";
+import HomePage from "./pages/HomePage";
 
 
 function App() {
