@@ -61,6 +61,13 @@ const getNext7Days = () => {
   return days;
 };
 
+const getLocalDateStr = (date) => {
+  const year  = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day   = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function DoctorPublicProfilePage() {
   const { id }   = useParams();
   const navigate = useNavigate();
@@ -107,12 +114,12 @@ export default function DoctorPublicProfilePage() {
   // Fetch booked slots when selected day changes
   useEffect(() => {
     if (!selectedDay || !id) return;
+
     const dayIndex = next7Days.findIndex(d => d.abbr === selectedDay.abbr);
     const date     = new Date();
     date.setDate(date.getDate() + dayIndex);
-    date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().split("T")[0];
-      console.log("Fetching booked slots for:", dateStr);
+    const dateStr  = getLocalDateStr(date);
+
     axios.get(`${API}/api/appointments/booked-slots/${id}/${dateStr}`)
       .then(res => setBookedSlots(res.data.bookedSlots ?? []))
       .catch(() => setBookedSlots([]));
@@ -125,15 +132,15 @@ export default function DoctorPublicProfilePage() {
     if (!selectedDay)      { alert("Please select a day first."); return; }
     if (!selectedSlot)     { alert("Please select a time slot first."); return; }
 
-    const dayIndex     = next7Days.findIndex(d => d.abbr === selectedDay.abbr);
-    const selectedDate = new Date();
-    selectedDate.setDate(selectedDate.getDate() + dayIndex);
-    selectedDate.setHours(0, 0, 0, 0);
+    const dayIndex = next7Days.findIndex(d => d.abbr === selectedDay.abbr);
+    const baseDate = new Date();
+    baseDate.setDate(baseDate.getDate() + dayIndex);
+    const dateStr  = getLocalDateStr(baseDate);
 
     navigate("/appointments/review", {
       state: {
         doctorId: id,
-        date:     selectedDate.toISOString(),
+        date:     dateStr,
         time:     selectedSlot,
         reason:   "",
       }
@@ -360,10 +367,8 @@ export default function DoctorPublicProfilePage() {
             {/* Day selector */}
             <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
               {next7Days.map((d) => {
-                const hasSlots   = dayHasSlots(d.full);
-                const isSelected = selectedDay?.abbr === d.abbr;
-
-                // Check if this day is fully booked (only for selected day)
+                const hasSlots      = dayHasSlots(d.full);
+                const isSelected    = selectedDay?.abbr === d.abbr;
                 const isFullyBooked = isSelected && allSlotsBooked;
 
                 return (

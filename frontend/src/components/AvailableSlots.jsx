@@ -5,8 +5,15 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 const API = import.meta.env.VITE_API_URL;
 
 const DAY_MAP = {
-  0: "SUNDAY",    1: "MONDAY", 2: "TUESDAY",
-  3: "WEDNESDAY", 4: "THURSDAY", 5: "FRIDAY", 6: "SATURDAY",
+  0: "SUNDAY",    1: "MONDAY",    2: "TUESDAY",
+  3: "WEDNESDAY", 4: "THURSDAY",  5: "FRIDAY",  6: "SATURDAY",
+};
+
+const getLocalDateStr = (date) => {
+  const year  = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day   = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 export default function AvailableSlots({ doctorId, selectedDate, onSelectTime, selectedTime }) {
@@ -28,7 +35,10 @@ export default function AvailableSlots({ doctorId, selectedDate, onSelectTime, s
   useEffect(() => {
     if (!doctorId || !selectedDate) return;
     setLoading(true);
-    const dateStr = new Date(selectedDate).toISOString().split("T")[0];
+
+    const d       = new Date(selectedDate);
+    const dateStr = getLocalDateStr(d);
+
     axios.get(`${API}/api/appointments/booked-slots/${doctorId}/${dateStr}`)
       .then(res => setBookedSlots(res.data.bookedSlots ?? []))
       .catch(err => console.error("Error fetching booked slots:", err))
@@ -54,7 +64,7 @@ export default function AvailableSlots({ doctorId, selectedDate, onSelectTime, s
 
   const getSlotsForDate = () => {
     if (!selectedDate) return [];
-    const dayOfWeek      = DAY_MAP[new Date(selectedDate).getDay()];
+    const dayOfWeek       = DAY_MAP[new Date(selectedDate).getDay()];
     const dayAvailability = availability.filter((a) => a.day === dayOfWeek);
     return dayAvailability.flatMap((a) => generateSlots(a.startTime, a.endTime, duration));
   };
@@ -103,6 +113,9 @@ export default function AvailableSlots({ doctorId, selectedDate, onSelectTime, s
               }`}
             >
               {slot}
+              {isBooked && (
+                <span className="block text-[9px] text-gray-300 mt-0.5">Booked</span>
+              )}
             </button>
           );
         })}

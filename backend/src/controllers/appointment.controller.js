@@ -5,7 +5,6 @@ export const createAppointment = async (req, res) => {
   const { doctorId, date, time, reason } = req.body;
 
   try {
-    // Check doctor exists and is approved
     const doctor = await prisma.doctor.findUnique({
       where: { id: parseInt(doctorId) },
     });
@@ -18,20 +17,15 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Doctor is not available" });
     }
 
-    // Fix timezone — use start/end of day
-    const appointmentDate = new Date(date);
-    const dateStr    = appointmentDate.toISOString().split("T")[0];
+    // Use date-only string to avoid timezone shifts
+    const dateStr    = date.split("T")[0];
     const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
     const endOfDay   = new Date(`${dateStr}T23:59:59.999Z`);
 
-    // Check slot is not already booked
     const existing = await prisma.appointment.findFirst({
       where: {
         doctorId: parseInt(doctorId),
-        date: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
+        date: { gte: startOfDay, lte: endOfDay },
         time,
         status: { notIn: ["CANCELLED"] },
       },
@@ -66,11 +60,18 @@ export const createAppointment = async (req, res) => {
     });
 
     return res.status(201).json({
-      success: true,
-      message: "Appointment booked successfully",
+      success:     true,
+      message:     "Appointment booked successfully",
       appointment,
     });
   } catch (err) {
+    // Handle unique constraint violation
+    if (err.code === "P2002") {
+      return res.status(409).json({
+        success: false,
+        message: "This time slot is already booked",
+      });
+    }
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -116,18 +117,34 @@ export const getMyAppointments = async (req, res) => {
 export const getBookedSlots = async (req, res) => {
   const { doctorId, date } = req.params;
 
+  // Validate doctorId
+  const doctorIdNum = Number(doctorId);
+  if (!Number.isInteger(doctorIdNum)) {
+    return res.status(400).json({ success: false, message: "Invalid doctorId" });
+  }
+
+  // Validate date format YYYY-MM-DD
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(date)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid date format, expected YYYY-MM-DD",
+    });
+  }
+
   try {
     const startOfDay = new Date(`${date}T00:00:00.000Z`);
     const endOfDay   = new Date(`${date}T23:59:59.999Z`);
 
+    if (isNaN(startOfDay.getTime()) || isNaN(endOfDay.getTime())) {
+      return res.status(400).json({ success: false, message: "Invalid date value" });
+    }
+
     const appointments = await prisma.appointment.findMany({
       where: {
-        doctorId: parseInt(doctorId),
-        date: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        status: { notIn: ["CANCELLED"] },
+        doctorId: doctorIdNum,
+        date:     { gte: startOfDay, lte: endOfDay },
+        status:   { notIn: ["CANCELLED"] },
       },
       select: { time: true },
     });

@@ -37,7 +37,8 @@ export default function AppointmentReviewPage() {
 
   const { doctorId, date, time } = state;
 
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+  // Handle both YYYY-MM-DD and ISO string
+  const formattedDate = new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
 
@@ -54,7 +55,7 @@ export default function AppointmentReviewPage() {
       navigate("/appointments/confirmation", {
         state: {
           reason,
-          date:     new Date(date).toLocaleDateString("en-US", {
+          date:     new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
             month: "long", day: "numeric", year: "numeric"
           }),
           time,
@@ -111,7 +112,7 @@ export default function AppointmentReviewPage() {
               <div className="flex items-center gap-2 mb-2">
                 <FiCalendar className="text-blue-500 text-sm" />
                 <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider">
-                  Date & Time
+                  DATE & TIME
                 </p>
               </div>
               <p className="text-sm text-gray-800 font-medium">{formattedDate}</p>
@@ -122,7 +123,7 @@ export default function AppointmentReviewPage() {
               <div className="flex items-center gap-2 mb-2">
                 <FiFileText className="text-blue-500 text-sm" />
                 <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider">
-                  Reason for Visit
+                  REASON FOR VISIT
                 </p>
               </div>
               <p className="text-sm text-gray-800 font-medium">

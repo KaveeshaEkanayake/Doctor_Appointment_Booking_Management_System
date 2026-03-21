@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body }   from "express-validator";
+import { body, param } from "express-validator";
 import { authenticate, authorizePatient } from "../middlewares/auth.middleware.js";
 import {
   createAppointment,
@@ -11,7 +11,15 @@ import validate from "../middlewares/validate.middleware.js";
 const router = Router();
 
 // Public — get booked slots for a doctor on a date
-router.get("/booked-slots/:doctorId/:date", getBookedSlots);
+router.get(
+  "/booked-slots/:doctorId/:date",
+  [
+    param("doctorId").isInt().withMessage("Doctor ID must be an integer"),
+    param("date").matches(/^\d{4}-\d{2}-\d{2}$/).withMessage("Date must be YYYY-MM-DD"),
+  ],
+  validate,
+  getBookedSlots
+);
 
 // Patient protected
 router.post(
@@ -19,9 +27,15 @@ router.post(
   authenticate,
   authorizePatient,
   [
-    body("doctorId").notEmpty().withMessage("Doctor ID is required"),
-    body("date").notEmpty().isISO8601().withMessage("Valid date is required"),
-    body("time").notEmpty().withMessage("Time is required"),
+    body("doctorId")
+      .notEmpty().withMessage("Doctor ID is required")
+      .isInt().withMessage("Doctor ID must be an integer")
+      .toInt(),
+    body("date")
+      .notEmpty()
+      .isISO8601().withMessage("Valid date is required"),
+    body("time")
+      .notEmpty().withMessage("Time is required"),
     body("reason").optional().isString(),
   ],
   validate,
