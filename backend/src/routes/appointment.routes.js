@@ -32,8 +32,8 @@ router.post(
       .isInt().withMessage("Doctor ID must be an integer")
       .toInt(),
     body("date")
-      .notEmpty()
-      .isISO8601().withMessage("Valid date is required"),
+  .notEmpty().withMessage("Date is required")
+  .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage("Date must be YYYY-MM-DD format"),
     body("time")
       .notEmpty().withMessage("Time is required"),
     body("reason").optional().isString(),
