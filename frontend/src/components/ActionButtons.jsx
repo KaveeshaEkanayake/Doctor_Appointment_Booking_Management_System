@@ -1,17 +1,15 @@
-import { useNavigate } from "react-router-dom";
 export default function ActionButtons({ onBack, onConfirm }) {
   return (
-    <div className="flex justify-between mt-6">
+    <div className="flex gap-4 mt-6">
       <button
         onClick={onBack}
-        className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition"
+        className="flex-1 bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition"
       >
         Back
       </button>
-
       <button
         onClick={onConfirm}
-        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm"
       >
         Confirm Appointment
       </button>

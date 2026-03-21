@@ -17,6 +17,8 @@ import DoctorPublicProfilePage from "./pages/DoctorPublicProfilePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import HomePage from "./pages/HomePage";
+import AppointmentReviewPage       from "./pages/AppointmentReviewPage";
+import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 
 
 function App() {
@@ -33,7 +35,8 @@ function App() {
       <Route path="/doctors/:id" element={<DoctorPublicProfilePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
-      
+      <Route path="/appointments/review"       element={<AppointmentReviewPage />} />
+      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />

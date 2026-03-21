@@ -17,6 +17,7 @@ model Patient {
   dateOfBirth DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+  appointments Appointment[]
 
 }
 
@@ -30,7 +31,7 @@ model Doctor {
   specialisation String
   status         Status        @default(PENDING)
   profileStatus  ProfileStatus @default(NOT_SUBMITTED)
-
+  appointments Appointment[]
   // Profile fields (DAMS-20)
   profilePhoto    String?
   bio             String?
@@ -93,4 +94,27 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  doctorId  Int
+  date      DateTime
+  time      String
+  reason    String?
+  status    AppointmentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  MISSED
 }
