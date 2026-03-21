@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
 import headerImg from "../assets/LoginImg.png";
-import logoImg from "../assets/Logo04.PNG";
+import logoImg    from "../assets/Logo04.PNG";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link }        from "react-router-dom";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email,         setEmail]         = useState("");
+  const [password,      setPassword]      = useState("");
   const [statusMessage, setStatusMessage] = useState("");
-  const [statusType, setStatusType] = useState("");
-  const [role, setRole] = useState("patient");
+  const [statusType,    setStatusType]    = useState("");
+  const [role,          setRole]          = useState("patient");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -22,8 +22,16 @@ export default function LoginPage() {
 
     try {
       const res = await axios.post(endpoint, { email, password });
+
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", role);
+
+      // ← Store user info for Header and other components
+      if (role === "patient" && res.data.patient) {
+        localStorage.setItem("user", JSON.stringify(res.data.patient));
+      } else if (role === "doctor" && res.data.doctor) {
+        localStorage.setItem("user", JSON.stringify(res.data.doctor));
+      }
 
       if (role === "patient") {
         navigate("/doctors");
@@ -59,9 +67,7 @@ export default function LoginPage() {
         <h2 className="mt-6 text-4xl font-bold mb-2 text-black-700">Welcome back</h2>
         <p className="mb-4 text-[#878787]">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
+          <Link to="/register" className="text-blue-600 hover:underline">Sign up</Link>
         </p>
 
         {/* Role selector */}
@@ -70,9 +76,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => setRole("patient")}
             className={`flex-1 py-2 text-sm font-medium transition ${
-              role === "patient"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-50"
+              role === "patient" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
             Patient
@@ -81,9 +85,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => setRole("doctor")}
             className={`flex-1 py-2 text-sm font-medium transition ${
-              role === "doctor"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-50"
+              role === "doctor" ? "bg-blue-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
             Doctor
@@ -92,9 +94,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-4 bg-white p-6 rounded-lg">
           <div>
-            <label htmlFor="email" className="block mb-2 text-gray-700">
-              Email Address
-            </label>
+            <label htmlFor="email" className="block mb-2 text-gray-700">Email Address</label>
             <input
               id="email"
               type="email"
@@ -106,9 +106,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-2 text-gray-700">
-              Your Password
-            </label>
+            <label htmlFor="password" className="block mb-2 text-gray-700">Your Password</label>
             <input
               id="password"
               type="password"
@@ -130,9 +128,7 @@ export default function LoginPage() {
             <label className="flex items-center">
               <input type="checkbox" className="mr-2" /> Remember me
             </label>
-            <a href="/forgot" className="text-blue-600 hover:underline">
-              Forgot password?
-            </a>
+            <a href="/forgot" className="text-blue-600 hover:underline">Forgot password?</a>
           </div>
         </form>
 
