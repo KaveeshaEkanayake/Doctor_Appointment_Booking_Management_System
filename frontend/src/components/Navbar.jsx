@@ -53,16 +53,7 @@ export default function Navbar() {
           {/* Patient logged in — show dashboard + appointments */}
           {isPatient && (
             <>
-              <NavLink
-                to="/patient/dashboard"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition ${
-                    isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
-                  }`
-                }
-              >
-                Dashboard
-              </NavLink>
+            
               <NavLink
                 to="/my-appointments"
                 className={({ isActive }) =>
