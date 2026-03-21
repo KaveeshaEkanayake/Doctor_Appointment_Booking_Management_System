@@ -1,140 +1,168 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import logoImg from "../assets/Logo04.PNG";
-import { FaBars, FaTimes, FaUser, FaLock } from "react-icons/fa";
+import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navbar() {
+  const navigate   = useNavigate();
+  const [open, setOpen] = useState(false);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();
+  const role  = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
 
-    const navItems = [
-        { path: "/homepage", name: "Home" },
-        { path: "/doctors", name: "Doctors" },
-        { path: "/about", name: "About" },
-        { path: "/contact", name: "Contact Us" },
-    ];
+  const isPatient = token && role === "patient";
 
-    return (
-        <header className="relative flex justify-between items-center px-4 md:px-6 py-4">
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
 
-            {/* LEFT: Hamburger + Logo */}
-            <div className="flex items-center gap-3 md:ml-14">
-                
-                {/* Hamburger */}
-                <button
-                    className="md:hidden text-xl"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <FaBars />
-                </button>
+  const navLinks = [
+    { label: "Home",       to: "/"         },
+    { label: "Doctors",    to: "/doctors"  },
+    { label: "About",      to: "/about"    },
+    { label: "Contact Us", to: "/contact"  },
+  ];
 
-                {/* Logo */}
-                <img
-                    src={logoImg}
-                    alt="Logo"
-                    className="h-10 cursor-pointer"
-                    onClick={() => navigate("/homepage")}
-                />
+  return (
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/">
+          <img src={logoImg} alt="MediCare" className="h-10 w-auto" />
+        </Link>
+
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `text-sm font-medium transition ${
+                  isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                }`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+
+          {/* Patient logged in — show dashboard + appointments */}
+          {isPatient && (
+            <>
+              <NavLink
+                to="/patient/dashboard"
+                className={({ isActive }) =>
+                  `text-sm font-medium transition ${
+                    isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                  }`
+                }
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/my-appointments"
+                className={({ isActive }) =>
+                  `text-sm font-medium transition ${
+                    isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                  }`
+                }
+              >
+                My Appointments
+              </NavLink>
+            </>
+          )}
+        </div>
+
+        {/* Desktop right buttons */}
+        <div className="hidden md:flex items-center gap-3">
+          {isPatient ? (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 border border-gray-300 text-gray-600 text-sm font-medium px-4 py-2 rounded-full hover:bg-gray-50 transition"
+            >
+              Log out
+            </button>
+          ) : (
+            <>
+              <Link
+                to="/register"
+                className="flex items-center gap-2 border border-blue-600 text-blue-600 text-sm font-medium px-4 py-2 rounded-full hover:bg-blue-50 transition"
+              >
+                ✦ Register
+              </Link>
+              <Link
+                to="/login"
+                className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-blue-700 transition"
+              >
+                ⊙ Log in
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden text-gray-600"
+        >
+          {open ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `text-sm font-medium ${isActive ? "text-blue-600" : "text-gray-600"}`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+
+          {isPatient && (
+            <>
+              <NavLink to="/patient/dashboard" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-600">
+                Dashboard
+              </NavLink>
+              <NavLink to="/my-appointments" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-600">
+                My Appointments
+              </NavLink>
+              <button onClick={handleLogout} className="text-sm font-medium text-red-500 text-left">
+                Log out
+              </button>
+            </>
+          )}
+
+          {!isPatient && (
+            <div className="flex gap-3">
+              <Link
+                to="/register"
+                onClick={() => setOpen(false)}
+                className="flex-1 text-center border border-blue-600 text-blue-600 text-sm font-medium px-4 py-2 rounded-full"
+              >
+                Register
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="flex-1 text-center bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-full"
+              >
+                Log in
+              </Link>
             </div>
-
-            {/* CENTER: Desktop Nav */}
-            <nav className="hidden md:flex gap-6 text-gray-600 font-medium">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            `px-2 py-1 ${
-                                isActive
-                                    ? "text-[#0E82FD] font-semibold"
-                                    : "text-gray-600"
-                            } hover:text-[#0E82FD] transition`
-                        }
-                    >
-                        {item.name}
-                    </NavLink>
-                ))}
-            </nav>
-
-            {/* RIGHT: Desktop Buttons */}
-            <div className="hidden md:flex gap-3 items-center mr-14">
-                <button
-                    onClick={() => navigate("/register")}
-                    className="flex items-center gap-2 px-4 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-500"
-                >
-                    <FaUser /> Register
-                </button>
-
-                <button
-                    onClick={() => navigate("/login")}
-                    className="flex items-center gap-2 px-4 py-1 bg-[#4486CC] text-white rounded-full hover:bg-[#3672A8]"
-                >
-                    <FaLock /> Log In
-                </button>
-            </div>
-
-            {/* MOBILE MENU */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-50"
-                    onClick={() => setIsOpen(false)}
-                >
-                    {/* Sidebar */}
-                    <div
-                        className="w-64 h-full bg-white p-5"
-                        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-                    >
-
-                        {/* Header */}
-                        <div className="flex justify-between items-center mb-6">
-                            <img src={logoImg} className="h-8" />
-                            <FaTimes
-                                className="text-xl cursor-pointer"
-                                onClick={() => setIsOpen(false)}
-                            />
-                        </div>
-
-                        {/* Links */}
-                        <div className="flex flex-col gap-4">
-                            {navItems.map((item) => (
-                                <NavLink
-                                    key={item.path}
-                                    to={item.path}
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-gray-700 hover:text-blue-600"
-                                >
-                                    {item.name}
-                                </NavLink>
-                            ))}
-                        </div>
-
-                        {/* Buttons */}
-                        <div className="mt-6 flex flex-col gap-3">
-                            <button
-                                onClick={() => {
-                                    navigate("/register");
-                                    setIsOpen(false);
-                                }}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full"
-                            >
-                                <FaUser /> Register
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    navigate("/login");
-                                    setIsOpen(false);
-                                }}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-[#4486CC] text-white rounded-full"
-                            >
-                                <FaLock /> Log In
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-        </header>
-    );
+          )}
+        </div>
+      )}
+    </nav>
+  );
 }

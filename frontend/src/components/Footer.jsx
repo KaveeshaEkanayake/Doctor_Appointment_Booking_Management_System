@@ -1,139 +1,127 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import logoImg from "../assets/Logo04.PNG";
-import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
 
 export default function Footer() {
+  const [email,         setEmail]         = useState("");
+  const [newsletterMsg, setNewsletterMsg] = useState("");
+
+  const handleNewsletterSubmit = () => {
+    if (!email || !email.includes("@")) {
+      setNewsletterMsg("Please enter a valid email.");
+      return;
+    }
+    setNewsletterMsg("Thanks! We'll be in touch soon.");
+    setEmail("");
+    setTimeout(() => setNewsletterMsg(""), 3000);
+  };
+
   return (
-    <footer className="bg-[#F6FAFF] mt-auto">
+    <footer className="bg-white border-t border-gray-100 pt-12 pb-6">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
 
-      {/* MAIN FOOTER CONTENT */}
-      <div className="px-10 py-8">
-        <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr_1.5fr] gap-10">
-
-          {/* Branding */}
+          {/* Brand */}
           <div>
-            <img src={logoImg} alt="MediCare Logo" className="h-10 mb-2" />
-            <p className="text-sm text-[#012047]">
-              Effortlessly schedule your medical <br />
-              appointments with MediCare. Connect <br />
-              with healthcare professionals, manage<br />
-              appointments & prioritize your well being.
+            <img src={logoImg} alt="MediCare" className="h-10 mb-3" />
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Effortlessly schedule your medical appointments with MediCare.
+              Connect with healthcare professionals, manage appointments &
+              prioritize your well being.
             </p>
           </div>
 
           {/* Company */}
           <div>
-            <h4 className="font-bold mb-4 text-[#012047]">Company</h4>
-            <ul className="space-y-4 text-sm text-[#012047]">
+            <h3 className="text-sm font-bold text-gray-800 mb-4">Company</h3>
+            <ul className="space-y-2">
               <li>
-                <NavLink to="/homepage"
-                  className={({ isActive }) =>
-                    isActive ? "text-[#0E82FD]" : "hover:text-[#0E82FD]"
-                  }>
+                <Link to="/" className="text-sm text-gray-500 hover:text-blue-600 transition">
                   Home
-                </NavLink>
+                </Link>
               </li>
               <li>
-                <NavLink to="/about"
-                  className={({ isActive }) =>
-                    isActive ? "text-[#0E82FD]" : "hover:text-[#0E82FD]"
-                  }>
+                <Link to="/about" className="text-sm text-gray-500 hover:text-blue-600 transition">
                   About Us
-                </NavLink>
+                </Link>
               </li>
               <li>
-                <NavLink to="/contact"
-                  className={({ isActive }) =>
-                    isActive ? "text-[#0E82FD]" : "hover:text-[#0E82FD]"
-                  }>
+                <Link to="/contact" className="text-sm text-gray-500 hover:text-blue-600 transition">
                   Contact Us
-                </NavLink>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Specialities */}
           <div>
-            <h4 className="font-bold mb-4 text-[#012047]">Specialities</h4>
-            <ul className="space-y-4 text-sm text-[#012047]">
-              <li>Neurology</li>
-              <li>Cardiologist</li>
-              <li>Dentist</li>
+            <h3 className="text-sm font-bold text-gray-800 mb-4">Specialities</h3>
+            <ul className="space-y-2">
+              {["Neurology", "Cardiologist", "Dentist"].map((s) => (
+                <li key={s}>
+                  <Link
+                    to="/doctors"
+                    className="text-sm text-gray-500 hover:text-blue-600 transition"
+                  >
+                    {s}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact + Newsletter */}
           <div>
-            <h4 className="font-bold mb-4 text-[#012047]">Contact</h4>
-            <ul className="space-y-4 text-sm text-[#012047]">
-
-              <li className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-black" />
-                Kings Street, Colombo
+            <h3 className="text-sm font-bold text-gray-800 mb-4">Contact Us</h3>
+            <ul className="space-y-2 mb-4">
+              <li className="flex items-center gap-2 text-sm text-gray-500">
+                📍 Kings Street, Colombo
               </li>
-
-              <li className="flex items-center gap-2">
-                <FaPhoneAlt className="text-black" />
-                +11 23456789
+              <li className="flex items-center gap-2 text-sm text-gray-500">
+                📞 +11 2345789
               </li>
-
-              <li className="flex items-center gap-2">
-                <FaEnvelope className="text-black" />
-                medicare@example.com
+              <li className="flex items-center gap-2 text-sm text-gray-500">
+                ✉️ medicare@example.com
               </li>
-
             </ul>
-          </div>
 
-          {/* Email Subscribe */}
-          <div>
-            <div className="flex mt-2">
+            {/* Newsletter */}
+            <div className="flex gap-2 mt-4">
               <input
                 type="email"
                 placeholder="Enter Email"
-                className="px-3 py-2 w-full border border-r-0 rounded-l-md text-black focus:outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700">
+              <button
+                onClick={handleNewsletterSubmit}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
                 Submit
               </button>
             </div>
+            {newsletterMsg && (
+              <p className="text-xs text-green-600 mt-2">{newsletterMsg}</p>
+            )}
           </div>
+        </div>
 
+        {/* Bottom bar */}
+        <div className="border-t border-gray-100 pt-6 flex flex-col md:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-gray-400">
+            Copyright © 2024 MediCare. All Rights Reserved
+          </p>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-400 cursor-default">
+              Privacy Policy
+            </span>
+            <span className="text-xs text-gray-400 cursor-default">
+              Terms & Conditions
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* COPYRIGHT */}
-      <div className="bg-[#E2EDFF] py-4 w-full px-10 flex justify-between items-center text-xs text-[#012047]">
-
-        {/* Left side */}
-        <div>
-          Copyright © 2024 MediCare. All Rights Reserved
-        </div>
-
-        {/* Right side */}
-        <div className="flex gap-6">
-          <NavLink
-            to="/privacy"
-            className={({ isActive }) =>
-              isActive ? "text-[#0E82FD]" : "hover:underline"
-            }
-          >
-            Privacy Policy
-          </NavLink>
-
-          <NavLink
-            to="/terms"
-            className={({ isActive }) =>
-              isActive ? "text-[#0E82FD]" : "hover:underline"
-            }
-          >
-            Terms & Conditions
-          </NavLink>
-        </div>
-
-      </div>
-
     </footer>
   );
 }
