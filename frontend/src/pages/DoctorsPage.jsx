@@ -81,7 +81,7 @@ const BookNowButton = ({ doctorId }) => {
       timeoutRef.current = setTimeout(() => setMsg(""), 3000);
       return;
     }
-    navigate(`/appointments/book/${doctorId}`);
+    navigate(`/doctors/${doctorId}`);
   };
 
   return (

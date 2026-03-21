@@ -4,7 +4,7 @@ import logoImg from "../assets/Logo04.PNG";
 import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navbar() {
-  const navigate   = useNavigate();
+  const navigate        = useNavigate();
   const [open, setOpen] = useState(false);
 
   const role  = localStorage.getItem("role");
@@ -19,22 +19,21 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { label: "Home",       to: "/"         },
-    { label: "Doctors",    to: "/doctors"  },
-    { label: "About",      to: "/about"    },
-    { label: "Contact Us", to: "/contact"  },
+    { label: "Home",       to: "/"        },
+    { label: "Doctors",    to: "/doctors" },
+    { label: "About",      to: "/about"   },
+    { label: "Contact Us", to: "/contact" },
   ];
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
 
-        {/* Logo */}
         <Link to="/">
           <img src={logoImg} alt="MediCare" className="h-10 w-auto" />
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <NavLink
@@ -50,30 +49,17 @@ export default function Navbar() {
             </NavLink>
           ))}
 
-          {/* Patient logged in — show dashboard + appointments */}
           {isPatient && (
-            <>
-              <NavLink
-                to="/patient/dashboard"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition ${
-                    isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
-                  }`
-                }
-              >
-                Dashboard
-              </NavLink>
-              <NavLink
-                to="/my-appointments"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition ${
-                    isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
-                  }`
-                }
-              >
-                My Appointments
-              </NavLink>
-            </>
+            <NavLink
+              to="/my-appointments"
+              className={({ isActive }) =>
+                `text-sm font-medium transition ${
+                  isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                }`
+              }
+            >
+              My Appointments
+            </NavLink>
           )}
         </div>
 
@@ -105,10 +91,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile hamburger */}
-        <button
-          onClick={() => setOpen(!open)}
-          className="md:hidden text-gray-600"
-        >
+        <button onClick={() => setOpen(!open)} className="md:hidden text-gray-600">
           {open ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
         </button>
       </div>
@@ -131,13 +114,19 @@ export default function Navbar() {
 
           {isPatient && (
             <>
-              <NavLink to="/patient/dashboard" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-600">
-                Dashboard
-              </NavLink>
-              <NavLink to="/my-appointments" onClick={() => setOpen(false)} className="text-sm font-medium text-gray-600">
+              <NavLink
+                to="/my-appointments"
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `text-sm font-medium ${isActive ? "text-blue-600" : "text-gray-600"}`
+                }
+              >
                 My Appointments
               </NavLink>
-              <button onClick={handleLogout} className="text-sm font-medium text-red-500 text-left">
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-red-500 text-left"
+              >
                 Log out
               </button>
             </>

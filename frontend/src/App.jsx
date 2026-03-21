@@ -1,21 +1,23 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import LoginPage              from "./pages/LoginPage";
-import RegisterPage           from "./pages/RegisterPage";
-import DoctorRegistration     from "./pages/DoctorRegistration";
-import DoctorDashboard        from "./pages/DoctorDashboard";
-import DoctorProfilePage      from "./pages/DoctorProfilePage";
-import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
-import ProtectedRoute         from "./components/ProtectedRoute";
-import MyAppointments         from "./pages/MyAppointments";
-import PatientProfilePage     from "./pages/PatientProfilePage";
-import AdminLoginPage         from "./pages/AdminLoginPage";
-import AdminDashboardPage     from "./pages/AdminDashboardPage";
-import AdminDoctorsPage       from "./pages/AdminDoctorsPage";
-import DoctorsPage            from "./pages/DoctorsPage";
-import AboutPage              from "./pages/AboutPage";
-import ContactPage            from "./pages/ContactPage";
-import HomePage               from "./pages/Homepage";
+import LoginPage                from "./pages/LoginPage";
+import RegisterPage             from "./pages/RegisterPage";
+import DoctorRegistration       from "./pages/DoctorRegistration";
+import DoctorDashboard          from "./pages/DoctorDashboard";
+import DoctorProfilePage        from "./pages/DoctorProfilePage";
+import DoctorAvailabilityPage   from "./pages/DoctorAvailabilityPage";
+import ProtectedRoute           from "./components/ProtectedRoute";
+import MyAppointments           from "./pages/MyAppointments";
+import PatientProfilePage       from "./pages/PatientProfilePage";
+import AdminLoginPage           from "./pages/AdminLoginPage";
+import AdminDashboardPage       from "./pages/AdminDashboardPage";
+import AdminDoctorsPage         from "./pages/AdminDoctorsPage";
+import DoctorsPage              from "./pages/DoctorsPage";
+import DoctorPublicProfilePage  from "./pages/DoctorPublicProfilePage";
+import AboutPage                from "./pages/AboutPage";
+import ContactPage              from "./pages/ContactPage";
+import HomePage from "./pages/Homepage";
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
       <Route path="/my-appointments" element={<MyAppointments />} />
       <Route path="/patient/profile" element={<PatientProfilePage />} />
       <Route path="/doctors"         element={<DoctorsPage />} />
+      <Route path="/doctors/:id"     element={<DoctorPublicProfilePage />} />
       <Route path="/about"           element={<AboutPage />} />
       <Route path="/contact"         element={<ContactPage />} />
       <Route path="/homepage"         element={<HomePage />} />

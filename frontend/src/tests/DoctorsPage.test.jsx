@@ -335,7 +335,7 @@ describe('DoctorsPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
 
-  it('should navigate to booking page when patient clicks Book Now', async () => {
+  it('should navigate to doctor profile when patient clicks Book Now', async () => {
     localStorage.setItem('token', 'fake-patient-token')
     localStorage.setItem('role', 'patient')
 
@@ -349,7 +349,7 @@ describe('DoctorsPage', () => {
     fireEvent.click(screen.getAllByText(/Book Now/i)[0])
 
     expect(mockNavigate).toHaveBeenCalledWith(
-      `/appointments/book/${mockDoctors[0].id}`
+      `/doctors/${mockDoctors[0].id}`
     )
   })
 
