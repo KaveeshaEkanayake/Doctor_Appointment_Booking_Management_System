@@ -158,12 +158,22 @@ export const getPublicDoctorProfile = async (req, res) => {
 };
 
 // GET /api/doctors (public - list approved doctors)
+// GET /api/doctors (public)
 export const getApprovedDoctors = async (req, res) => {
+  const { search, specialisation } = req.query;
+
   try {
     const doctors = await prisma.doctor.findMany({
       where: {
         status:        "APPROVED",
-        profileStatus: "APPROVED",   // ← NEW
+        profileStatus: "APPROVED",
+        ...(specialisation && { specialisation }),
+        ...(search && {
+          OR: [
+            { firstName: { contains: search, mode: "insensitive" } },
+            { lastName:  { contains: search, mode: "insensitive" } },
+          ],
+        }),
       },
       select: {
         id:             true,
@@ -172,6 +182,7 @@ export const getApprovedDoctors = async (req, res) => {
         specialisation: true,
         profilePhoto:   true,
         bio:            true,
+        experience:     true,
         consultationFee:true,
       },
       orderBy: { createdAt: "desc" },
