@@ -65,15 +65,16 @@ export default function DoctorPublicProfilePage() {
   const { id }   = useParams();
   const navigate = useNavigate();
 
-  const [doctor,       setDoctor]       = useState(null);
-  const [availability, setAvailability] = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState("");
-  const [selectedDay,  setSelectedDay]  = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [doctor,              setDoctor]              = useState(null);
+  const [availability,        setAvailability]        = useState([]);
+  const [appointmentDuration, setAppointmentDuration] = useState(30);
+  const [loading,             setLoading]             = useState(true);
+  const [error,               setError]               = useState("");
+  const [selectedDay,         setSelectedDay]         = useState(null);
+  const [selectedSlot,        setSelectedSlot]        = useState(null);
 
-  const token    = localStorage.getItem("token");
-  const role     = localStorage.getItem("role");
+  const token     = localStorage.getItem("token");
+  const role      = localStorage.getItem("role");
   const next7Days = getNext7Days();
 
   useEffect(() => {
@@ -85,10 +86,15 @@ export default function DoctorPublicProfilePage() {
           axios.get(`${API}/api/doctors/${id}`),
           axios.get(`${API}/api/doctors/${id}/availability`),
         ]);
+
         setDoctor(docRes.data.doctor);
-        setAvailability(availRes.data.availability ?? []);
+
+        const availabilityData = availRes.data.availability ?? [];
+        setAvailability(availabilityData);
+        setAppointmentDuration(availRes.data.appointmentDuration ?? 30);
+
         const firstAvail = next7Days.find((d) =>
-          availRes.data.availability?.some((a) => a.day === d.full && a.isActive)
+          availabilityData.some((a) => a.day === d.full)
         );
         if (firstAvail) setSelectedDay(firstAvail);
       } catch {
@@ -101,21 +107,21 @@ export default function DoctorPublicProfilePage() {
   }, [id]);
 
   const handleBookAppointment = () => {
-    if (!token) { navigate("/login"); return; }
+    if (!token)            { navigate("/login"); return; }
     if (role === "doctor") { alert("Please use a patient account to book appointments."); return; }
     if (role === "admin")  { alert("Admins cannot book appointments."); return; }
     if (!selectedSlot)     { alert("Please select a time slot first."); return; }
-    navigate(`/appointments/book/${id}`, { state: { selectedDay, selectedSlot } });
+    navigate("/appointments/book", { state: { doctorId: id, selectedDay, selectedSlot } });
   };
 
   const slotsForDay = selectedDay
     ? availability
-        .filter((a) => a.day === selectedDay.full && a.isActive)
-        .flatMap((a) => generateTimeSlots(a.startTime, a.endTime, doctor?.appointmentDuration ?? 30))
+        .filter((a) => a.day === selectedDay.full)
+        .flatMap((a) => generateTimeSlots(a.startTime, a.endTime, appointmentDuration))
     : [];
 
   const dayHasSlots = (dayFull) =>
-    availability.some((a) => a.day === dayFull && a.isActive);
+    availability.some((a) => a.day === dayFull);
 
   if (loading) {
     return (
@@ -162,24 +168,18 @@ export default function DoctorPublicProfilePage() {
         {/* Left wave blob */}
         <div className="absolute left-0 top-0 w-48 h-32 opacity-40">
           <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M0,0 C40,20 80,0 120,30 C160,60 180,100 200,120 L200,0 Z"
-              fill="#BFDBFE"
-            />
+            <path d="M0,0 C40,20 80,0 120,30 C160,60 180,100 200,120 L200,0 Z" fill="#BFDBFE" />
           </svg>
         </div>
 
         {/* Right wave blob */}
         <div className="absolute right-0 top-0 w-48 h-32 opacity-40">
           <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M200,0 C160,20 120,0 80,30 C40,60 20,100 0,120 L0,0 Z"
-              fill="#BFDBFE"
-            />
+            <path d="M200,0 C160,20 120,0 80,30 C40,60 20,100 0,120 L0,0 Z" fill="#BFDBFE" />
           </svg>
         </div>
 
-        {/* Small decorative dots */}
+        {/* Decorative dots */}
         <div className="absolute top-6  left-32  w-2 h-2 rounded-full bg-blue-300 opacity-50" />
         <div className="absolute top-16 left-12  w-1.5 h-1.5 rounded-full bg-blue-200 opacity-40" />
         <div className="absolute top-8  right-32 w-2 h-2 rounded-full bg-blue-300 opacity-50" />
@@ -188,15 +188,17 @@ export default function DoctorPublicProfilePage() {
         <div className="absolute top-20 left-2/3 w-2 h-2 rounded-full bg-blue-300 opacity-30" />
 
         <div className="relative max-w-6xl mx-auto px-6 py-10 text-center">
-          {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-4">
-            <button onClick={() => navigate("/")} className="hover:text-blue-600 transition">
+            <button
+              onClick={() => navigate("/")}
+              className="hover:text-blue-600 transition"
+              aria-label="Home"
+            >
               🏠
             </button>
             <span>›</span>
             <span className="text-gray-600">Doctor Profile</span>
           </div>
-
           <h1 className="text-3xl font-bold text-gray-800">Doctor Profile</h1>
         </div>
       </div>
@@ -229,7 +231,6 @@ export default function DoctorPublicProfilePage() {
                 Dr. {doctor.firstName} {doctor.lastName}
               </h2>
 
-              {/* Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="bg-blue-50 text-blue-600 text-sm font-medium px-3 py-1 rounded-full border border-blue-100">
                   {doctor.specialisation}
@@ -241,7 +242,6 @@ export default function DoctorPublicProfilePage() {
                 )}
               </div>
 
-              {/* Rating + Verified */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <StarRating count={stars} />
@@ -254,7 +254,6 @@ export default function DoctorPublicProfilePage() {
                 </div>
               </div>
 
-              {/* Stats row */}
               <div className="flex flex-wrap gap-3 mb-6">
                 {doctor.qualifications && (
                   <div className="flex items-center gap-2 bg-blue-50 rounded-xl px-4 py-2.5">
@@ -291,7 +290,6 @@ export default function DoctorPublicProfilePage() {
                 )}
               </div>
 
-              {/* Book button */}
               <button
                 onClick={handleBookAppointment}
                 className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
@@ -303,11 +301,9 @@ export default function DoctorPublicProfilePage() {
           </div>
         </div>
 
-        {/* ── About + Education — ash/gray section background ── */}
+        {/* ── About + Education ── */}
         <div className="bg-gray-50 rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-8">
-
-            {/* About */}
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-800 mb-4">About the Doctor</h3>
               {doctor.bio ? (
@@ -317,10 +313,8 @@ export default function DoctorPublicProfilePage() {
               )}
             </div>
 
-            {/* Vertical divider */}
             <div className="hidden md:block w-px bg-gray-200" />
 
-            {/* Education & Honors */}
             <div className="w-full md:w-72">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Education & Honors</h3>
               {doctor.qualifications ? (
@@ -340,10 +334,9 @@ export default function DoctorPublicProfilePage() {
           </div>
         </div>
 
-        {/* ── Appointment + CTA row ── */}
+        {/* ── Appointment + CTA ── */}
         <div className="flex flex-col md:flex-row gap-6">
 
-          {/* Time slot card — ash background */}
           <div className="flex-1 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-2">
               <FiCalendar className="text-sm" /> Appointment
@@ -414,7 +407,6 @@ export default function DoctorPublicProfilePage() {
               A confirmation email will be sent once the doctor approves the request.
             </div>
 
-            {/* Confirm button */}
             <button
               onClick={handleBookAppointment}
               className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
@@ -423,7 +415,7 @@ export default function DoctorPublicProfilePage() {
             </button>
           </div>
 
-          {/* CTA card — white */}
+          {/* CTA card */}
           <div className="w-full md:w-72 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between">
             <div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3 leading-snug">
