@@ -40,17 +40,17 @@ describe('LoginPage', () => {
 
   it('should update email and password fields on input', () => {
     renderLoginPage()
-    const emailInput = screen.getByLabelText('Email Address')
+    const emailInput    = screen.getByLabelText('Email Address')
     const passwordInput = screen.getByLabelText('Your Password')
 
-    fireEvent.change(emailInput, { target: { value: 'john@gmail.com' } })
+    fireEvent.change(emailInput,    { target: { value: 'john@gmail.com' } })
     fireEvent.change(passwordInput, { target: { value: 'password123' } })
 
     expect(emailInput.value).toBe('john@gmail.com')
     expect(passwordInput.value).toBe('password123')
   })
 
-  it('should store token and navigate to patient dashboard on successful patient login', async () => {
+  it('should store token and navigate to doctors on successful patient login', async () => {
     axios.post.mockResolvedValueOnce({ data: { token: 'fake-jwt-token' } })
     renderLoginPage()
 
@@ -64,7 +64,7 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(localStorage.getItem('token')).toBe('fake-jwt-token')
-      expect(mockNavigate).toHaveBeenCalledWith('/patient/dashboard')
+      expect(mockNavigate).toHaveBeenCalledWith('/doctors')
     })
   })
 
@@ -107,10 +107,8 @@ describe('LoginPage', () => {
   it('should show pending message for doctor awaiting approval', async () => {
     renderLoginPage()
 
-    // ✅ Switch to doctor role FIRST
     fireEvent.click(screen.getByRole('button', { name: 'Doctor' }))
 
-    // ✅ Then set up mock
     axios.post.mockRejectedValueOnce({
       response: {
         status: 403,
