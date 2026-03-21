@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate }                 from "react-router-dom";
-import axios                           from "axios";
-import Navbar                          from "../components/Navbar";
-import Footer                          from "../components/Footer";
-import { AiOutlineLoading3Quarters }   from "react-icons/ai";
-import { FiSearch }                    from "react-icons/fi";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate }                         from "react-router-dom";
+import axios                                   from "axios";
+import Navbar                                  from "../components/Navbar";
+import Footer                                  from "../components/Footer";
+import { AiOutlineLoading3Quarters }           from "react-icons/ai";
+import { FiSearch }                            from "react-icons/fi";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -43,19 +43,28 @@ const getStars = (id) => {
 const StarRating = ({ count }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((star) => (
-      <span key={star} className={`text-lg ${star <= count ? "text-yellow-400" : "text-gray-200"}`}>
+      <span
+        key={star}
+        className={`text-lg ${star <= count ? "text-yellow-400" : "text-gray-200"}`}
+      >
         ★
       </span>
     ))}
   </div>
 );
 
-// Book Now button with role-based logic
 const BookNowButton = ({ doctorId }) => {
-  const navigate  = useNavigate();
-  const token     = localStorage.getItem("token");
-  const role      = localStorage.getItem("role");
+  const navigate    = useNavigate();
+  const token       = localStorage.getItem("token");
+  const role        = localStorage.getItem("role");
   const [msg, setMsg] = useState("");
+  const timeoutRef  = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const handleClick = () => {
     if (!token) {
@@ -64,15 +73,14 @@ const BookNowButton = ({ doctorId }) => {
     }
     if (role === "doctor") {
       setMsg("Please use a patient account to book appointments.");
-      setTimeout(() => setMsg(""), 3000);
+      timeoutRef.current = setTimeout(() => setMsg(""), 3000);
       return;
     }
     if (role === "admin") {
       setMsg("Admins cannot book appointments.");
-      setTimeout(() => setMsg(""), 3000);
+      timeoutRef.current = setTimeout(() => setMsg(""), 3000);
       return;
     }
-    // Patient
     navigate(`/appointments/book/${doctorId}`);
   };
 
@@ -133,8 +141,8 @@ export default function DoctorsPage() {
       return 0;
     });
 
-  const totalPages  = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated   = filtered.slice(
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated  = filtered.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
@@ -167,9 +175,13 @@ export default function DoctorsPage() {
               placeholder="Search for Doctors By Name"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              onKeyDown={(e) => { if (e.key === "Enter") setCurrentPage(1); }}
               className="flex-1 px-4 py-2 bg-transparent outline-none text-sm"
             />
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition">
+            <button
+              onClick={() => setCurrentPage(1)}
+              className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition"
+            >
               Search
             </button>
           </div>
@@ -243,7 +255,6 @@ export default function DoctorsPage() {
           {/* Main content */}
           <div className="flex-1">
 
-            {/* Count + sort top bar */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm font-medium text-gray-700">
                 Showing{" "}
@@ -272,7 +283,7 @@ export default function DoctorsPage() {
                 <p className="text-6xl mb-4">🩺</p>
                 <h2 className="text-2xl font-bold text-gray-700 mb-2">No Doctors Available</h2>
                 <p className="text-gray-400 text-sm mb-4">
-                  Currently, there's no active doctors available.<br />
+                  Currently, there are no active doctors available.<br />
                   Please check later.
                 </p>
                 {(search || specialty) && (
@@ -285,7 +296,7 @@ export default function DoctorsPage() {
                 )}
               </div>
 
-            /* Doctor grid — 3 columns with sidebar */
+            /* Doctor grid */
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -311,7 +322,6 @@ export default function DoctorsPage() {
 
                       {/* Content */}
                       <div className="p-4">
-                        {/* Specialty + Available */}
                         <div className="flex items-center justify-between mb-2">
                           <span className={`text-xs font-semibold pl-2 border-l-4 ${
                             specialtyColors[doc.specialisation] || "border-gray-400 text-gray-600"
@@ -324,12 +334,10 @@ export default function DoctorsPage() {
                           </span>
                         </div>
 
-                        {/* Name */}
                         <h3 className="font-bold text-gray-800 text-base mt-2 mb-3">
                           Dr. {doc.firstName} {doc.lastName}
                         </h3>
 
-                        {/* Experience + Stars */}
                         <div className="flex items-center justify-between mb-3">
                           {doc.experience && (
                             <span className="bg-gray-900 text-white text-xs px-3 py-1 rounded-full font-medium">
@@ -340,7 +348,6 @@ export default function DoctorsPage() {
                         </div>
 
                         <hr className="border-gray-100 mb-3" />
-
                         <BookNowButton doctorId={doc.id} />
                       </div>
                     </div>

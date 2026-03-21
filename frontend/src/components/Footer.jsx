@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logoImg from "../assets/Logo04.PNG";
-import { useState } from "react";
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
+  const [email,         setEmail]         = useState("");
+  const [newsletterMsg, setNewsletterMsg] = useState("");
+
+  const handleNewsletterSubmit = () => {
+    if (!email || !email.includes("@")) {
+      setNewsletterMsg("Please enter a valid email.");
+      return;
+    }
+    setNewsletterMsg("Thanks! We'll be in touch soon.");
+    setEmail("");
+    setTimeout(() => setNewsletterMsg(""), 3000);
+  };
 
   return (
     <footer className="bg-white border-t border-gray-100 pt-12 pb-6">
@@ -25,9 +35,21 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-bold text-gray-800 mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link to="/"        className="text-sm text-gray-500 hover:text-blue-600 transition">Home</Link></li>
-              <li><Link to="/about"   className="text-sm text-gray-500 hover:text-blue-600 transition">About Us</Link></li>
-              <li><Link to="/contact" className="text-sm text-gray-500 hover:text-blue-600 transition">Contact Us</Link></li>
+              <li>
+                <Link to="/" className="text-sm text-gray-500 hover:text-blue-600 transition">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="text-sm text-gray-500 hover:text-blue-600 transition">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-sm text-gray-500 hover:text-blue-600 transition">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -63,7 +85,7 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Email subscribe */}
+            {/* Newsletter */}
             <div className="flex gap-2 mt-4">
               <input
                 type="email"
@@ -72,10 +94,16 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+              <button
+                onClick={handleNewsletterSubmit}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
                 Submit
               </button>
             </div>
+            {newsletterMsg && (
+              <p className="text-xs text-green-600 mt-2">{newsletterMsg}</p>
+            )}
           </div>
         </div>
 
@@ -85,8 +113,12 @@ export default function Footer() {
             Copyright © 2024 MediCare. All Rights Reserved
           </p>
           <div className="flex items-center gap-4">
-            <Link to="/privacy"  className="text-xs text-gray-400 hover:text-blue-600 transition">Privacy Policy</Link>
-            <Link to="/terms"    className="text-xs text-gray-400 hover:text-blue-600 transition">Terms & Conditions</Link>
+            <span className="text-xs text-gray-400 cursor-default">
+              Privacy Policy
+            </span>
+            <span className="text-xs text-gray-400 cursor-default">
+              Terms & Conditions
+            </span>
           </div>
         </div>
       </div>

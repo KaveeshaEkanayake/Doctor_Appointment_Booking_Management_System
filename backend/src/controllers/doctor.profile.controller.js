@@ -158,7 +158,6 @@ export const getPublicDoctorProfile = async (req, res) => {
 };
 
 // GET /api/doctors (public - list approved doctors)
-// GET /api/doctors (public)
 export const getApprovedDoctors = async (req, res) => {
   const { search, specialisation } = req.query;
 
