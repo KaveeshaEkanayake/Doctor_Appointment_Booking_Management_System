@@ -289,14 +289,6 @@ export default function DoctorPublicProfilePage() {
                   </div>
                 )}
               </div>
-
-              <button
-                onClick={handleBookAppointment}
-                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-blue-700 transition shadow-sm"
-              >
-                <FiCalendar className="text-base" />
-                Book an appointment →
-              </button>
             </div>
           </div>
         </div>

@@ -14,15 +14,15 @@ vi.mock('react-router-dom', async () => {
 })
 
 const mockDoctor = {
-  id:                  1,
-  firstName:           "John",
-  lastName:            "Smith",
-  specialisation:      "Cardiology",
-  profilePhoto:        "",
-  bio:                 "Experienced cardiologist with 10 years of practice.",
-  qualifications:      "MBBS, MD Cardiology",
-  experience:          "10 years",
-  consultationFee:     2500,
+  id:              1,
+  firstName:       "John",
+  lastName:        "Smith",
+  specialisation:  "Cardiology",
+  profilePhoto:    "",
+  bio:             "Experienced cardiologist with 10 years of practice.",
+  qualifications:  "MBBS, MD Cardiology",
+  experience:      "10 years",
+  consultationFee: 2500,
 }
 
 const mockAvailability = [
@@ -128,14 +128,17 @@ describe('DoctorPublicProfilePage', () => {
     })
   })
 
-  it('should render Confirm & Book Appointment button', async () => {
+  it('should render only one Confirm and Book Appointment button', async () => {
     axios.get
       .mockResolvedValueOnce({ data: { success: true, doctor: mockDoctor } })
       .mockResolvedValueOnce({ data: { success: true, availability: mockAvailability, appointmentDuration: 30 } })
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Confirm & Book Appointment')).toBeDefined()
+      const bookButtons = screen.getAllByText(/Book/i).filter(
+        el => el.textContent.includes('Confirm')
+      )
+      expect(bookButtons.length).toBe(1)
     })
   })
 
@@ -159,17 +162,6 @@ describe('DoctorPublicProfilePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Doctor Not Found')).toBeDefined()
-    })
-  })
-
-  it('should render Book an appointment button in header', async () => {
-    axios.get
-      .mockResolvedValueOnce({ data: { success: true, doctor: mockDoctor } })
-      .mockResolvedValueOnce({ data: { success: true, availability: mockAvailability, appointmentDuration: 30 } })
-    renderPage()
-
-    await waitFor(() => {
-      expect(screen.getByText(/Book an appointment/i)).toBeDefined()
     })
   })
 
@@ -239,6 +231,19 @@ describe('DoctorPublicProfilePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Education & Honors')).toBeDefined()
+    })
+  })
+
+  it('should not have duplicate booking buttons', async () => {
+    axios.get
+      .mockResolvedValueOnce({ data: { success: true, doctor: mockDoctor } })
+      .mockResolvedValueOnce({ data: { success: true, availability: mockAvailability, appointmentDuration: 30 } })
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirm & Book Appointment')).toBeDefined()
+      // Should not find "Book an appointment" header button
+      expect(screen.queryByText('Book an appointment →')).toBeNull()
     })
   })
 
