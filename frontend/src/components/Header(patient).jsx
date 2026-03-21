@@ -33,7 +33,9 @@ export default function Header({ title, setIsSidebarOpen, notificationsCount }) 
 
       {/* Right */}
       <div className="flex items-center space-x-4">
-        <div className="relative cursor-pointer" onClick={() => navigate("/notifications")}>
+
+        {/* Bell — no navigation until /notifications is built */}
+        <div className="relative">
           <FaBell className="text-lg" />
           {notificationsCount > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">

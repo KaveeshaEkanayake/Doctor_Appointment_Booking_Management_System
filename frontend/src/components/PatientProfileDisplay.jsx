@@ -4,7 +4,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function PatentProfileDisplay({ onEdit }) {
+export default function PatientProfileDisplay({ onEdit }) {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
@@ -55,7 +55,7 @@ export default function PatentProfileDisplay({ onEdit }) {
             <p className="text-lg font-semibold">{fullName}</p>
             <p className="text-gray-600">{patient.email}</p>
             {patient.address && (
-              <p className="text-gray-600">{patient.address}</p>
+              <p className="text-gray-600">📍 {patient.address}</p>
             )}
           </div>
         </div>

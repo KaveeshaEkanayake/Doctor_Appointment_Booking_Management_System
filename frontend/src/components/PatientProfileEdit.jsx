@@ -5,11 +5,11 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 const API = import.meta.env.VITE_API_URL;
 
 export default function PatientProfileEdit({ onCancel }) {
-  const [formData,      setFormData]      = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [saving,        setSaving]        = useState(false);
-  const [error,         setError]         = useState("");
-  const [successMsg,    setSuccessMsg]    = useState("");
+  const [formData,   setFormData]   = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [saving,     setSaving]     = useState(false);
+  const [error,      setError]      = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -23,10 +23,12 @@ export default function PatientProfileEdit({ onCancel }) {
   }, []);
 
   const handleChange = (e) => {
+    if (!formData) return;
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
+    if (!formData) return;
     setSaving(true);
     setError("");
     setSuccessMsg("");
@@ -45,7 +47,6 @@ export default function PatientProfileEdit({ onCancel }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSuccessMsg("Profile updated successfully!");
-      // Update localStorage name if changed
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       localStorage.setItem("user", JSON.stringify({
         ...user,
@@ -161,9 +162,7 @@ export default function PatientProfileEdit({ onCancel }) {
       </div>
 
       {/* Messages */}
-      {error && (
-        <p className="text-red-500 text-sm">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       {successMsg && (
         <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded-lg px-4 py-2">
           ✅ {successMsg}

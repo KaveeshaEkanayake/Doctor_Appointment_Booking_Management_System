@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll, beforeAll, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
 import request from "supertest";
 import app     from "../app.js";
 import prisma  from "../lib/prisma.js";
@@ -31,6 +31,7 @@ afterAll(async () => {
   await prisma.patient.deleteMany({
     where: { email: "testpatient@profile.com" }
   });
+  await prisma.$disconnect();
 });
 
 beforeEach(async () => {
@@ -164,7 +165,6 @@ describe("PUT /api/patient/profile", () => {
 
     expect(res.status).toBe(200);
 
-    // Verify email unchanged in DB
     const patient = await prisma.patient.findUnique({
       where: { id: patientId }
     });

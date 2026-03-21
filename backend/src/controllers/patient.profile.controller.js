@@ -1,5 +1,4 @@
 import prisma from "../lib/prisma.js";
-import { validationResult } from "express-validator";
 
 // GET /api/patient/profile
 export const getPatientProfile = async (req, res) => {
@@ -31,11 +30,6 @@ export const getPatientProfile = async (req, res) => {
 
 // PUT /api/patient/profile
 export const updatePatientProfile = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, errors: errors.array() });
-  }
-
   const { firstName, lastName, phone, address, dateOfBirth } = req.body;
 
   try {
