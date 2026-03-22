@@ -16,7 +16,7 @@ import IconConsult from "../assets/IconConsult.PNG";
 
 import ImgDoctor from "../assets/ImgDoctor.png"
 
-import ImgFAQ from "../assets/ImgFAQ1.png"
+import ImgFAQ from "../assets/ImgFAQ1.PNG"
 
 
 export default function AboutPage() {
