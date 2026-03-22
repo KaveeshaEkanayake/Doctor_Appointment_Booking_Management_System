@@ -38,8 +38,17 @@ export const getDoctorAppointments = async (req, res) => {
 
 // PATCH /api/doctor/appointments/:id/status
 export const updateAppointmentStatus = async (req, res) => {
-  const { id }                         = req.params;
-  const { status, rejectionReason }    = req.body;
+  const { id }                      = req.params;
+  const { status, rejectionReason } = req.body;
+
+  // Validate ID
+  const parsedId = Number(id);
+  if (!Number.isInteger(parsedId) || parsedId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid appointment ID",
+    });
+  }
 
   if (!["CONFIRMED", "CANCELLED"].includes(status)) {
     return res.status(400).json({
@@ -57,7 +66,7 @@ export const updateAppointmentStatus = async (req, res) => {
 
   try {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: parseInt(id), doctorId: req.user.id },
+      where: { id: parsedId, doctorId: req.user.id },
     });
 
     if (!appointment) {
@@ -75,7 +84,7 @@ export const updateAppointmentStatus = async (req, res) => {
     }
 
     const updated = await prisma.appointment.update({
-      where: { id: parseInt(id) },
+      where: { id: parsedId },
       data: {
         status,
         rejectionReason: status === "CANCELLED" ? rejectionReason : null,
@@ -83,8 +92,8 @@ export const updateAppointmentStatus = async (req, res) => {
     });
 
     return res.status(200).json({
-      success: true,
-      message: `Appointment ${status === "CONFIRMED" ? "confirmed" : "rejected"} successfully`,
+      success:     true,
+      message:     `Appointment ${status === "CONFIRMED" ? "confirmed" : "rejected"} successfully`,
       appointment: updated,
     });
   } catch (err) {

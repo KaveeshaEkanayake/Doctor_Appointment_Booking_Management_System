@@ -17,17 +17,17 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Doctor is not available" });
     }
 
-    // Use date-only string to avoid timezone shifts
     const dateStr    = date.split("T")[0];
     const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
     const endOfDay   = new Date(`${dateStr}T23:59:59.999Z`);
 
+    // Check slot not already booked — exclude CANCELLED
     const existing = await prisma.appointment.findFirst({
       where: {
         doctorId: parseInt(doctorId),
-        date: { gte: startOfDay, lte: endOfDay },
+        date:     { gte: startOfDay, lte: endOfDay },
         time,
-        status: { notIn: ["CANCELLED"] },
+        status:   { notIn: ["CANCELLED"] },
       },
     });
 
@@ -65,13 +65,6 @@ export const createAppointment = async (req, res) => {
       appointment,
     });
   } catch (err) {
-    // Handle unique constraint violation
-    if (err.code === "P2002") {
-      return res.status(409).json({
-        success: false,
-        message: "This time slot is already booked",
-      });
-    }
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -96,15 +89,15 @@ export const getMyAppointments = async (req, res) => {
     });
 
     const formatted = appointments.map((appt) => ({
-      id:             appt.id,
-      doctorName:     `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
-      specialisation: appt.doctor.specialisation,
-      profilePhoto:   appt.doctor.profilePhoto,
-      date:           appt.date,
-      time:           appt.time,
-      reason:         appt.reason,
-      status:         appt.status.charAt(0) + appt.status.slice(1).toLowerCase(),
-      rejectionReason: appt.rejectionReason, 
+      id:              appt.id,
+      doctorName:      `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
+      specialisation:  appt.doctor.specialisation,
+      profilePhoto:    appt.doctor.profilePhoto,
+      date:            appt.date,
+      time:            appt.time,
+      reason:          appt.reason,
+      status:          appt.status.charAt(0) + appt.status.slice(1).toLowerCase(),
+      rejectionReason: appt.rejectionReason,
     }));
 
     return res.status(200).json({ success: true, appointments: formatted });
@@ -118,13 +111,11 @@ export const getMyAppointments = async (req, res) => {
 export const getBookedSlots = async (req, res) => {
   const { doctorId, date } = req.params;
 
-  // Validate doctorId
   const doctorIdNum = Number(doctorId);
   if (!Number.isInteger(doctorIdNum)) {
     return res.status(400).json({ success: false, message: "Invalid doctorId" });
   }
 
-  // Validate date format YYYY-MM-DD
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(date)) {
     return res.status(400).json({

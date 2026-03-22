@@ -49,7 +49,6 @@ beforeAll(async () => {
     { expiresIn: "1d" }
   );
 
-  // Create a test appointment
   const appt = await prisma.appointment.create({
     data: {
       patientId,
@@ -162,7 +161,6 @@ describe("PATCH /api/doctor/appointments/:id/status", () => {
   });
 
   it("should reject appointment with reason", async () => {
-    // Create a new pending appointment to reject
     const appt = await prisma.appointment.create({
       data: {
         patientId,
@@ -215,6 +213,16 @@ describe("PATCH /api/doctor/appointments/:id/status", () => {
     expect(res.status).toBe(400);
   });
 
+  it("should return 400 for invalid appointment ID", async () => {
+    const res = await request(app)
+      .patch("/api/doctor/appointments/abc/status")
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({ status: "CONFIRMED" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Invalid appointment ID");
+  });
+
   it("should return 401 when not authenticated", async () => {
     const res = await request(app)
       .patch(`/api/doctor/appointments/${appointmentId}/status`)
@@ -234,14 +242,14 @@ describe("PATCH /api/doctor/appointments/:id/status", () => {
 
   it("should return 404 when appointment not found", async () => {
     const res = await request(app)
-      .patch(`/api/doctor/appointments/99999/status`)
+      .patch("/api/doctor/appointments/99999/status")
       .set("Authorization", `Bearer ${doctorToken}`)
       .send({ status: "CONFIRMED" });
 
     expect(res.status).toBe(404);
   });
 
-  it("should make rejected slot available again", async () => {
+  it("should make rejected slot available again for rebooking", async () => {
     const appt = await prisma.appointment.create({
       data: {
         patientId,
@@ -252,6 +260,7 @@ describe("PATCH /api/doctor/appointments/:id/status", () => {
       },
     });
 
+    // Reject the appointment
     await request(app)
       .patch(`/api/doctor/appointments/${appt.id}/status`)
       .set("Authorization", `Bearer ${doctorToken}`)
@@ -260,11 +269,24 @@ describe("PATCH /api/doctor/appointments/:id/status", () => {
         rejectionReason: "Not available",
       });
 
-    // Check booked slots no longer includes this time
+    // Verify slot not in booked slots
     const slotsRes = await request(app)
       .get(`/api/appointments/booked-slots/${doctorId}/2026-12-15`);
-
     expect(slotsRes.body.bookedSlots).not.toContain("02:00 PM");
+
+    // Verify slot can be rebooked
+    const rebookRes = await request(app)
+      .post("/api/appointments")
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        doctorId,
+        date:   "2026-12-15",
+        time:   "02:00 PM",
+        reason: "Rebook after cancellation",
+      });
+
+    expect(rebookRes.status).toBe(201);
+    expect(rebookRes.body.appointment).toBeDefined();
   });
 
 });
