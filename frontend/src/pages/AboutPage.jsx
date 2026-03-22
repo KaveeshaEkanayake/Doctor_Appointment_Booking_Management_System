@@ -297,24 +297,7 @@ export default function AboutPage() {
                               bg-blue-400 rounded-full opacity-30 transform -translate-y-1/2"></div>
             </section>
 
-            {/* Section06 */}
-            <section className="py-16 bg-white px-4 md:px-8 lg:px-16">
-              <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                
-                {/* Left column: Heading + Image */}
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-[#0b1b3f] mb-8 text-left">
-                    Frequently Asked Questions
-                  </h2>
-                  <img
-                    src={ImgFAQ} // replace with your FAQ image
-                    alt="Consultation"
-                    className="w-full h-full max-w-100 rounded-lg  object-cover"
-                  />
-
-                </div>
-
-                  {/* ── DOCTORS SECTION — real data ── */}
+            {/* ── DOCTORS SECTION — real data ── */}
                   <section className="px-10 py-16 bg-[#F6FAFF]">
                         <h3 className="text-2xl font-semibold text-center mb-10 text-[#012047]">
                           Our Specialist Doctors
@@ -415,6 +398,23 @@ export default function AboutPage() {
                           </button>
                         </div>
                   </section>
+
+            {/* Section06 */}
+            <section className="py-16 bg-white px-4 md:px-8 lg:px-16">
+              <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                
+                {/* Left column: Heading + Image */}
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-[#0b1b3f] mb-8 text-left">
+                    Frequently Asked Questions
+                  </h2>
+                  <img
+                    src={ImgFAQ} // replace with your FAQ image
+                    alt="Consultation"
+                    className="w-full h-full max-w-100 rounded-lg  object-cover"
+                  />
+
+                </div>
 
                 {/* Right column: FAQ list */}
                 <div className="mt-0 md:mt-0 lg:mt-10">
