@@ -97,19 +97,20 @@ enum Day {
 }
 
 model Appointment {
-  id        Int               @id @default(autoincrement())
-  patientId Int
-  doctorId  Int
-  date      DateTime
-  time      String
-  reason    String?
-  status    AppointmentStatus @default(PENDING)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @default(now()) @updatedAt
-  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor    Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  id              Int               @id @default(autoincrement())
+  patientId       Int
+  doctorId        Int
+  date            DateTime
+  time            String
+  reason          String?
+  status          AppointmentStatus @default(PENDING)
+  rejectionReason String?           
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-  @@unique([doctorId, date, time]) // ← add this
+  @@unique([doctorId, date, time])
 }
 
 enum AppointmentStatus {

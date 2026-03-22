@@ -104,6 +104,7 @@ export const getMyAppointments = async (req, res) => {
       time:           appt.time,
       reason:         appt.reason,
       status:         appt.status.charAt(0) + appt.status.slice(1).toLowerCase(),
+      rejectionReason: appt.rejectionReason, 
     }));
 
     return res.status(200).json({ success: true, appointments: formatted });

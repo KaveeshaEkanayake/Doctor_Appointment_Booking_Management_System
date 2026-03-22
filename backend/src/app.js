@@ -7,6 +7,7 @@ import doctorPublicRoutes from "./routes/doctor.public.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import patientProtectedRoutes from "./routes/patient.protected.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
+import doctorAppointmentRoutes from "./routes/doctor.appointment.routes.js";
 
 const app = express();
 
@@ -36,5 +37,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/patient", patientProtectedRoutes);
 
 app.use("/api/appointments", appointmentRoutes);
+
+app.use("/api/doctor", doctorAppointmentRoutes);
 
 export default app;

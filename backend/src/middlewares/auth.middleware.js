@@ -63,3 +63,4 @@ export const authorizePatient = (req, res, next) => {
   }
   next();
 };
+
