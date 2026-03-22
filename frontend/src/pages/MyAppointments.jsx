@@ -36,12 +36,12 @@ export default function MyAppointments() {
   }, []);
 
   const getStatusStyle = (status) => {
-    if (status === "Confirmed")  return "bg-green-100 text-green-700";
+    if (status === "Confirmed")   return "bg-green-100 text-green-700";
     if (status === "Rescheduled") return "bg-blue-100 text-blue-700";
-    if (status === "Cancelled")  return "bg-red-100 text-red-700";
-    if (status === "Pending")    return "bg-yellow-100 text-yellow-700";
-    if (status === "Completed")  return "bg-gray-100 text-gray-700";
-    if (status === "Missed")     return "bg-red-200 text-red-800";
+    if (status === "Cancelled")   return "bg-red-100 text-red-700";
+    if (status === "Pending")     return "bg-yellow-100 text-yellow-700";
+    if (status === "Completed")   return "bg-gray-100 text-gray-700";
+    if (status === "Missed")      return "bg-red-200 text-red-800";
     return "bg-gray-100 text-gray-600";
   };
 
@@ -68,9 +68,13 @@ export default function MyAppointments() {
       const apptDate = new Date(appt.date);
       apptDate.setHours(0, 0, 0, 0);
       if (activeMenu === "upcoming") {
-        return apptDate >= today && appt.status !== "Completed" && appt.status !== "Missed";
+        return apptDate >= today &&
+          appt.status !== "Completed" &&
+          appt.status !== "Missed";
       } else {
-        return apptDate < today || appt.status === "Completed" || appt.status === "Missed";
+        return apptDate < today ||
+          appt.status === "Completed" ||
+          appt.status === "Missed";
       }
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -115,6 +119,7 @@ export default function MyAppointments() {
             </div>
           ) : (
             <>
+              {/* Table header */}
               <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr] bg-gray-100 px-3 py-1.5 rounded-md text-gray-600 font-medium text-xs gap-x-4">
                 <p>Doctor Name</p>
                 <p className="text-center">Date</p>
@@ -122,44 +127,63 @@ export default function MyAppointments() {
                 <p className="text-right">Status</p>
               </div>
 
+              {/* Table body */}
               <div className="mt-2 space-y-1.5">
                 {filteredAppointments.map((appointment, index) => {
-                  const todayRow    = isToday(appointment.date);
+                  const todayRow     = isToday(appointment.date);
                   const fullDateTime = `${new Date(appointment.date).toLocaleDateString()} ${appointment.time}`;
 
                   return (
-                    <div
-                      key={index}
-                      className={`grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center border rounded-md px-3 py-1.5 gap-x-4 transition
-                        ${todayRow ? "bg-blue-50 border-blue-300" : "hover:bg-gray-50"}`}
-                    >
-                      <p className="truncate text-sm">{appointment.doctorName}</p>
+                    <div key={index}>
+                      {/* Appointment row */}
+                      <div
+                        className={`grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center border rounded-md px-3 py-1.5 gap-x-4 transition
+                          ${todayRow ? "bg-blue-50 border-blue-300" : "hover:bg-gray-50"}
+                          ${appointment.rejectionReason ? "rounded-b-none border-b-0" : ""}`}
+                      >
+                        <p className="truncate text-sm">{appointment.doctorName}</p>
 
-                      <div className="flex flex-col items-center text-sm gap-1">
-                        <span className="truncate cursor-pointer" title={fullDateTime}>
-                          {new Date(appointment.date).toLocaleDateString()}
-                        </span>
-                        <div className="flex gap-1 flex-wrap justify-center">
-                          {isToday(appointment.date) && (
-                            <span className="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full">
-                              Today
-                            </span>
-                          )}
-                          {isTomorrow(appointment.date) && (
-                            <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full">
-                              Tomorrow
-                            </span>
-                          )}
+                        <div className="flex flex-col items-center text-sm gap-1">
+                          <span className="truncate cursor-pointer" title={fullDateTime}>
+                            {new Date(appointment.date).toLocaleDateString()}
+                          </span>
+                          <div className="flex gap-1 flex-wrap justify-center">
+                            {isToday(appointment.date) && (
+                              <span className="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full">
+                                Today
+                              </span>
+                            )}
+                            {isTomorrow(appointment.date) && (
+                              <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full">
+                                Tomorrow
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <p className="text-center text-sm">{appointment.time}</p>
+
+                        <div className="flex justify-end">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(appointment.status)}`}>
+                            {appointment.status}
+                          </span>
                         </div>
                       </div>
 
-                      <p className="text-center text-sm">{appointment.time}</p>
-
-                      <div className="flex justify-end">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(appointment.status)}`}>
-                          {appointment.status}
-                        </span>
-                      </div>
+                      {/* Rejection note from doctor */}
+                      {appointment.rejectionReason && (
+                        <div className="border border-t-0 rounded-b-md px-4 py-3 bg-red-50 flex items-start gap-2">
+                          <span className="text-red-500 text-sm mt-0.5">ⓘ</span>
+                          <div>
+                            <p className="text-xs font-semibold text-red-600">
+                              Note from Doctor
+                            </p>
+                            <p className="text-xs text-red-500 mt-0.5">
+                              {appointment.rejectionReason}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

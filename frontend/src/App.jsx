@@ -19,7 +19,7 @@ import ContactPage from "./pages/ContactPage";
 import HomePage from "./pages/HomePage";
 import AppointmentReviewPage       from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
-
+import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 
 function App() {
   return (
@@ -81,6 +81,15 @@ function App() {
         element={
           <ProtectedRoute allowedRole="doctor">
             <DoctorAvailabilityPage />
+          </ProtectedRoute>
+        }
+        
+      />
+      <Route
+        path="/doctor/appointments"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <DoctorAppointmentsPage />
           </ProtectedRoute>
         }
       />
