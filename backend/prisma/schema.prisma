@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Patient {
+  id           Int           @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  password     String
+  phone        String
+  address      String?
+  dateOfBirth  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  appointments Appointment[]
+}
+
+model Doctor {
+  id                  Int            @id @default(autoincrement())
+  firstName           String
+  lastName            String
+  email               String         @unique
+  password            String
+  phone               String
+  specialisation      String
+  status              Status         @default(PENDING)
+  profileStatus       ProfileStatus  @default(NOT_SUBMITTED)
+  profilePhoto        String?
+  bio                 String?
+  qualifications      String?
+  experience          String?
+  consultationFee     Float?
+  appointmentDuration Int            @default(30)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @default(now()) @updatedAt
+  availability        Availability[]
+  appointments        Appointment[]
+}
+
+model Availability {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  day       Day
+  startTime String
+  endTime   String
+  isActive  Boolean  @default(true)
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([doctorId, day, startTime, endTime])
+}
+
+model Appointment {
+  id              Int               @id @default(autoincrement())
+  patientId       Int
+  doctorId        Int
+  date            DateTime
+  time            String
+  reason          String?
+  status          AppointmentStatus @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProfileStatus {
+  NOT_SUBMITTED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  MISSED
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
