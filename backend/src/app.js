@@ -8,8 +8,6 @@ import doctorProtectedRoutes from "./routes/doctor.protected.routes.js";
 import doctorPublicRoutes   from "./routes/doctor.public.routes.js";
 import adminRoutes          from "./routes/admin.routes.js";
 import patientProtectedRoutes from "./routes/patient.protected.routes.js";
-import appointmentRoutes from "./routes/appointment.routes.js";
-import doctorAppointmentRoutes from "./routes/doctor.appointment.routes.js";
 import appointmentRoutes    from "./routes/appointment.routes.js";
 import doctorAppointmentRoutes from "./routes/doctor.appointment.routes.js";
 
@@ -33,11 +31,11 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }));
 
 // Auth routes
-app.use("/api/auth",   authRoutes);
+app.use("/api/auth",        authRoutes);
 app.use("/api/auth/doctor", doctorRoutes);
 
 // Doctor protected routes
-app.use("/api/doctor", doctorProtectedRoutes);
+app.use("/api/doctor",  doctorProtectedRoutes);
 
 // Public doctor routes
 app.use("/api/doctors", doctorPublicRoutes);
@@ -48,10 +46,5 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/patient",      patientProtectedRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/doctor",       doctorAppointmentRoutes);
-app.use("/api/patient", patientProtectedRoutes);
-
-app.use("/api/appointments", appointmentRoutes);
-
-app.use("/api/doctor", doctorAppointmentRoutes);
 
 export default app;
