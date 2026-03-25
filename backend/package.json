@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "build": "npx prisma generate",
+    "build": "echo build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit --runInBand"
   },
   "jest": {
@@ -45,6 +45,6 @@
   "seed": "node prisma/seed.js"
 },
 "engines": {
-  "node": ">=22.0.0"
+  "node": "22.12.0"
 }
 }
