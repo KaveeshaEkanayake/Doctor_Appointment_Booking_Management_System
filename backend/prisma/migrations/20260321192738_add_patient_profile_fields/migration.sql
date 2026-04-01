@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Patient" ADD COLUMN     "address" TEXT,
+ADD COLUMN     "dateOfBirth" TIMESTAMP(3),
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
