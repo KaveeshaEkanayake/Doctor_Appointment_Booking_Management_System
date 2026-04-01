@@ -53,3 +53,14 @@ export const authorizeAdmin = (req, res, next) => {
   }
   next();
 };
+
+export const authorizePatient = (req, res, next) => {
+  if (req.user.role !== "patient") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Patients only."
+    });
+  }
+  next();
+};
+

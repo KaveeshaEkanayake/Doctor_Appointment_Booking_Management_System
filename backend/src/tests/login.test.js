@@ -10,10 +10,10 @@ describe("POST /api/auth/login", () => {
       .post("/api/auth/register")
       .send({
         firstName: "Login",
-        lastName: "Test",
-        email: "login_test_unique@gmail.com",
-        password: "password123",
-        phone: "0501234567"
+        lastName:  "Test",
+        email:     "login_test_unique@gmail.com",
+        password:  "password123",
+        phone:     "0501234567"
       });
   });
 
@@ -28,7 +28,7 @@ describe("POST /api/auth/login", () => {
     const res = await request(app)
       .post("/api/auth/login")
       .send({
-        email: "login_test_unique@gmail.com",
+        email:    "login_test_unique@gmail.com",
         password: "password123"
       });
 
@@ -41,7 +41,7 @@ describe("POST /api/auth/login", () => {
     const res = await request(app)
       .post("/api/auth/login")
       .send({
-        email: "login_test_unique@gmail.com",
+        email:    "login_test_unique@gmail.com",
         password: "wrongpassword"
       });
 
@@ -53,7 +53,7 @@ describe("POST /api/auth/login", () => {
     const res = await request(app)
       .post("/api/auth/login")
       .send({
-        email: "notexist@gmail.com",
+        email:    "notexist@gmail.com",
         password: "password123"
       });
 
@@ -76,7 +76,7 @@ describe("POST /api/auth/login", () => {
     const res = await request(app)
       .post("/api/auth/login")
       .send({
-        email: "notanemail",
+        email:    "notanemail",
         password: "password123"
       });
 
@@ -93,6 +93,24 @@ describe("POST /api/auth/login", () => {
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
+  });
+
+  // ← new test for patient object and role in response
+  it("should return patient info and role on successful login", async () => {
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email:    "login_test_unique@gmail.com",
+        password: "password123"
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.patient).toBeDefined();
+    expect(res.body.patient.firstName).toBe("Login");
+    expect(res.body.patient.lastName).toBe("Test");
+    expect(res.body.patient.email).toBe("login_test_unique@gmail.com");
+    expect(res.body.patient.role).toBe("patient");
+    expect(res.body.patient.password).toBeUndefined();
   });
 
 });
