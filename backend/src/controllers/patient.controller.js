@@ -2,12 +2,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
 
-if (!process.env.JWT_SECRET) {
-  throw new Error(
-    "JWT_SECRET environment variable is not set. Please configure JWT_SECRET before starting the application."
-  );
-}
-
 const INVALID_CREDENTIALS_RESPONSE = {
   success: false,
   message: "Invalid credentials. Please check your email and password.",
