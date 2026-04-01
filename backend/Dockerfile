@@ -8,7 +8,7 @@ RUN npm ci --ignore-scripts
 
 COPY . .
 
-RUN npx prisma generate
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
 
 EXPOSE 5000
 
