@@ -17,7 +17,7 @@ import DoctorPublicProfilePage from "./pages/DoctorPublicProfilePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import HomePage from "./pages/HomePage";
-import AppointmentReviewPage       from "./pages/AppointmentReviewPage";
+import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 
@@ -25,7 +25,7 @@ function App() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<HomePage />} />  
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/register" element={<DoctorRegistration />} />
@@ -35,7 +35,7 @@ function App() {
       <Route path="/doctors/:id" element={<DoctorPublicProfilePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
-      <Route path="/appointments/review"       element={<AppointmentReviewPage />} />
+      <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
 
       {/* Admin public */}
@@ -50,6 +50,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
       <Route
         path="/admin/doctors"
         element={
@@ -68,6 +69,8 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+     
       <Route
         path="/doctor/profile"
         element={
@@ -83,7 +86,7 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-        
+
       />
       <Route
         path="/doctor/appointments"
