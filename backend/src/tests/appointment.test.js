@@ -307,5 +307,203 @@ describe("GET /api/appointments/my", () => {
     const appt = res.body.appointments[0];
     expect(appt.status).toBe("Pending");
   });
+  describe("PATCH /api/appointments/:id/reschedule", () => {
+  let appointmentId;
+
+  beforeAll(async () => {
+    // Create a future appointment to reschedule
+    const appointment = await prisma.appointment.create({
+      data: {
+        patientId,
+        doctorId,
+        date:   new Date("2026-12-10T00:00:00.000Z"),
+        time:   "09:00 AM",
+        status: "PENDING",
+      },
+    });
+    appointmentId = appointment.id;
+  });
+
+  it("should reschedule a pending appointment successfully", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-20",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toContain("rescheduled successfully");
+    expect(res.body.appointment.time).toBe("10:00 AM");
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should reschedule a confirmed appointment successfully", async () => {
+    // Set appointment to CONFIRMED first
+    await prisma.appointment.update({
+      where: { id: appointmentId },
+      data:  { status: "CONFIRMED" },
+    });
+
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-21",
+        time: "11:00 AM",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should reset status to PENDING after reschedule", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-22",
+        time: "09:00 AM",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should return 400 when trying to reschedule a cancelled appointment", async () => {
+    // Create a cancelled appointment
+    const cancelled = await prisma.appointment.create({
+      data: {
+        patientId,
+        doctorId,
+        date:   new Date("2026-12-15T00:00:00.000Z"),
+        time:   "02:00 PM",
+        status: "CANCELLED",
+      },
+    });
+
+    const res = await request(app)
+      .patch(`/api/appointments/${cancelled.id}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-25",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("should return 409 when new slot is already booked", async () => {
+    // Create a conflicting appointment
+    await prisma.appointment.create({
+      data: {
+        patientId,
+        doctorId,
+        date:   new Date("2026-12-23T00:00:00.000Z"),
+        time:   "03:00 PM",
+        status: "PENDING",
+      },
+    });
+
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-23",
+        time: "03:00 PM",
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.message).toBe("This time slot is already booked");
+  });
+
+  it("should return 404 when appointment does not belong to patient", async () => {
+    // Create another patient
+    const hashedPassword = await bcrypt.hash("Test@1234", 10);
+    const otherPatient = await prisma.patient.create({
+      data: {
+        firstName: "Other",
+        lastName:  "Patient",
+        email:     "otherpatient@reschedule.com",
+        password:  hashedPassword,
+        phone:     "0779999999",
+      },
+    });
+    const otherToken = jwt.sign(
+      { id: otherPatient.id, email: otherPatient.email, role: "patient" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .send({
+        date: "2026-12-24",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(404);
+
+    await prisma.patient.delete({ where: { email: "otherpatient@reschedule.com" } });
+  });
+
+  it("should return 400 when date is missing", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ time: "10:00 AM" });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 400 when time is missing", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-24" });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 401 when not authenticated", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .send({
+        date: "2026-12-24",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 403 when doctor tries to reschedule", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({
+        date: "2026-12-24",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(403);
+  });
+
+  it("should return 400 for invalid appointment ID", async () => {
+    const res = await request(app)
+      .patch("/api/appointments/invalid/reschedule")
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({
+        date: "2026-12-24",
+        time: "10:00 AM",
+      });
+
+    expect(res.status).toBe(400);
+  });
+});
 
 });
