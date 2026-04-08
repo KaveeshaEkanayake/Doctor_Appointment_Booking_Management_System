@@ -65,6 +65,7 @@ model Appointment {
   reason          String?
   status          AppointmentStatus @default(PENDING)
   rejectionReason String?
+  reminderSent    Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
   patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
