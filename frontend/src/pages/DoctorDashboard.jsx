@@ -20,7 +20,7 @@ export default function DoctorDashboard() {
 
   const [appointments, setAppointments] = useState([]);
 
-  // ✅ REAL-TIME DATE
+  
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
@@ -73,7 +73,7 @@ export default function DoctorDashboard() {
     }, 1000);
   }, []);
 
-  // ✅ FORMAT DATE
+ 
   const formatDate = (date) => {
     return date.toLocaleDateString("en-US", {
       weekday: "long",
@@ -83,7 +83,7 @@ export default function DoctorDashboard() {
     });
   };
 
-  // ✅ STATUS STYLES
+ 
   const statusStyle = (status) => {
     switch (status) {
       case "Confirmed":
@@ -103,7 +103,7 @@ export default function DoctorDashboard() {
     <DoctorLayout>
       <div className="p-4 sm:p-6 md:p-8">
 
-        {/* 🔥 Header */}
+        {/*  Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
           <div>
@@ -144,7 +144,7 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        {/* 🔥 Cards */}
+        {/*  Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
 
           {/* Today */}
@@ -203,7 +203,7 @@ export default function DoctorDashboard() {
 
         </div>
 
-        {/* 🔥 Schedule */}
+        {/* Schedule */}
         <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
 
           <div className="flex justify-between items-center mb-4">
