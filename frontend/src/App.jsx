@@ -69,7 +69,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-
+    
      
       <Route
         path="/doctor/profile"
