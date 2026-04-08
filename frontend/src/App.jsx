@@ -70,7 +70,6 @@ function App() {
         }
       />
     
-     
       <Route
         path="/doctor/profile"
         element={

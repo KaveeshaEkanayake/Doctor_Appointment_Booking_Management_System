@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DoctorLayout from "../layouts/DoctorLayout";
 import { FiCalendar, FiUsers, FiAlertTriangle } from "react-icons/fi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import imgDoctor from "../assets/imgDoctor.png";
+import doctorprofile from "../assets/doctorprofile.jpg"
 import { FiBell } from "react-icons/fi";
 
 export default function DoctorDashboard() {
@@ -131,7 +131,7 @@ export default function DoctorDashboard() {
               className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded-lg transition"
             >
               <img
-                src={imgDoctor}
+                src={doctorprofile}
                 onError={(e) => (e.target.src = defaultProfile)}
                 alt="profile"
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border"
