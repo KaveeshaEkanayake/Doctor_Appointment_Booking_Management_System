@@ -5,6 +5,8 @@ import {
   createAppointment,
   getMyAppointments,
   getBookedSlots,
+  rescheduleAppointment,
+  cancelAppointment,
 } from "../controllers/appointment.controller.js";
 import validate from "../middlewares/validate.middleware.js";
 
@@ -43,5 +45,29 @@ router.post(
 );
 
 router.get("/my", authenticate, authorizePatient, getMyAppointments);
+
+router.patch(
+  "/:id/reschedule",
+  authenticate,
+  authorizePatient,
+  [
+    param("id").isInt().withMessage("Appointment ID must be an integer"),
+    body("date").notEmpty().isISO8601().withMessage("Valid date is required"),
+    body("time").notEmpty().withMessage("Time is required"),
+  ],
+  validate,
+  rescheduleAppointment
+);
+
+router.patch(
+  "/:id/cancel",
+  authenticate,
+  authorizePatient,
+  [
+    param("id").isInt().withMessage("Appointment ID must be an integer"),
+  ],
+  validate,
+  cancelAppointment
+);
 
 export default router;

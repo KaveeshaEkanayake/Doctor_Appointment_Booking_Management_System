@@ -93,7 +93,7 @@ Run database migrations:
 npx prisma migrate deploy
 ```
 
-Seed the database:
+Seed the database (creates admin account):
 ```bash
 npx prisma db seed
 ```
@@ -127,8 +127,10 @@ Frontend runs on `http://localhost:5173`
 ---
 
 ## Default Admin Credentials
-
-Default admin credentials are configured during database seeding. See `prisma/seed.js` for details.
+```
+Email:    admin@dams.com
+Password: Admin@1234
+```
 
 ---
 
@@ -168,13 +170,14 @@ feature/*     → feature branches (PR into development)
 ## Live Demo
 
 - **Production:** https://medicarelk.vercel.app
-- **API Docs:** https://doctorappointmentbookingmanagementsystem-production.up.railway.app/api/docs
+- **Staging:** https://doctor-appointment-booki-git-cdacf1-kaveeshaekanayakes-projects.vercel.app
+- **API:** https://doctorappointmentbookingmanagementsystem-production.up.railway.app/api/docs
 
 ---
 
 ## API Documentation
 
-Swagger UI is available at `/api/docs` on the backend URL. Full API documentation covers authentication, doctor management, patient management, availability, and appointments.
+Swagger UI is available at `/api/docs` on both staging and production backend URLs.
 
 ---
 

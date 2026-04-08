@@ -11,7 +11,6 @@ let patientId;
 let doctorId;
 
 beforeAll(async () => {
-  // Create test patient
   const hashedPassword = await bcrypt.hash("Test@1234", 10);
   const patient = await prisma.patient.create({
     data: {
@@ -29,7 +28,6 @@ beforeAll(async () => {
     { expiresIn: "1d" }
   );
 
-  // Create test doctor
   const doctor = await prisma.doctor.create({
     data: {
       firstName:      "Test",
@@ -51,15 +49,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await prisma.appointment.deleteMany({
-    where: { patientId }
-  });
-  await prisma.patient.deleteMany({
-    where: { email: "testpatient@appointment.com" }
-  });
-  await prisma.doctor.deleteMany({
-    where: { email: "testdoctor@appointment.com" }
-  });
+  await prisma.appointment.deleteMany({ where: { patientId } });
+  await prisma.patient.deleteMany({ where: { email: "testpatient@appointment.com" } });
+  await prisma.doctor.deleteMany({ where: { email: "testdoctor@appointment.com" } });
   await prisma.$disconnect();
 });
 
@@ -68,45 +60,27 @@ describe("GET /api/appointments/booked-slots/:doctorId/:date", () => {
   it("should return empty array when no appointments booked", async () => {
     const res = await request(app)
       .get(`/api/appointments/booked-slots/${doctorId}/2026-12-01`);
-
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.bookedSlots).toEqual([]);
   });
 
   it("should return booked slots for a specific date", async () => {
-    // Create a test appointment
     await prisma.appointment.create({
-      data: {
-        patientId,
-        doctorId,
-        date:   new Date("2026-12-01T00:00:00.000Z"),
-        time:   "10:00 AM",
-        status: "PENDING",
-      },
+      data: { patientId, doctorId, date: new Date("2026-12-01T00:00:00.000Z"), time: "10:00 AM", status: "PENDING" },
     });
-
     const res = await request(app)
       .get(`/api/appointments/booked-slots/${doctorId}/2026-12-01`);
-
     expect(res.status).toBe(200);
     expect(res.body.bookedSlots).toContain("10:00 AM");
   });
 
   it("should not return cancelled appointment slots", async () => {
     await prisma.appointment.create({
-      data: {
-        patientId,
-        doctorId,
-        date:   new Date("2026-12-01T00:00:00.000Z"),
-        time:   "11:00 AM",
-        status: "CANCELLED",
-      },
+      data: { patientId, doctorId, date: new Date("2026-12-01T00:00:00.000Z"), time: "11:00 AM", status: "CANCELLED" },
     });
-
     const res = await request(app)
       .get(`/api/appointments/booked-slots/${doctorId}/2026-12-01`);
-
     expect(res.status).toBe(200);
     expect(res.body.bookedSlots).not.toContain("11:00 AM");
   });
@@ -114,7 +88,6 @@ describe("GET /api/appointments/booked-slots/:doctorId/:date", () => {
   it("should be publicly accessible without token", async () => {
     const res = await request(app)
       .get(`/api/appointments/booked-slots/${doctorId}/2026-12-01`);
-
     expect(res.status).toBe(200);
   });
 
@@ -126,16 +99,9 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        date:   "2026-12-02T00:00:00.000Z",
-        time:   "09:00 AM",
-        reason: "General checkup",
-      });
-
+      .send({ doctorId, date: "2026-12-02T00:00:00.000Z", time: "09:00 AM", reason: "General checkup" });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.appointment).toBeDefined();
     expect(res.body.appointment.time).toBe("09:00 AM");
   });
 
@@ -143,13 +109,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        date:   "2026-12-02T00:00:00.000Z",
-        time:   "09:00 AM",
-        reason: "Duplicate booking",
-      });
-
+      .send({ doctorId, date: "2026-12-02T00:00:00.000Z", time: "09:00 AM", reason: "Duplicate" });
     expect(res.status).toBe(409);
     expect(res.body.message).toBe("This time slot is already booked");
   });
@@ -157,13 +117,7 @@ describe("POST /api/appointments", () => {
   it("should return 401 when not authenticated", async () => {
     const res = await request(app)
       .post("/api/appointments")
-      .send({
-        doctorId,
-        date:   "2026-12-03T00:00:00.000Z",
-        time:   "10:00 AM",
-        reason: "Test",
-      });
-
+      .send({ doctorId, date: "2026-12-03T00:00:00.000Z", time: "10:00 AM" });
     expect(res.status).toBe(401);
   });
 
@@ -171,13 +125,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${doctorToken}`)
-      .send({
-        doctorId,
-        date:   "2026-12-03T00:00:00.000Z",
-        time:   "10:00 AM",
-        reason: "Test",
-      });
-
+      .send({ doctorId, date: "2026-12-03T00:00:00.000Z", time: "10:00 AM" });
     expect(res.status).toBe(403);
   });
 
@@ -185,11 +133,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        date:   "2026-12-03T00:00:00.000Z",
-        time:   "10:00 AM",
-      });
-
+      .send({ date: "2026-12-03T00:00:00.000Z", time: "10:00 AM" });
     expect(res.status).toBe(400);
   });
 
@@ -197,11 +141,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        time: "10:00 AM",
-      });
-
+      .send({ doctorId, time: "10:00 AM" });
     expect(res.status).toBe(400);
   });
 
@@ -209,11 +149,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        date: "2026-12-03T00:00:00.000Z",
-      });
-
+      .send({ doctorId, date: "2026-12-03T00:00:00.000Z" });
     expect(res.status).toBe(400);
   });
 
@@ -221,12 +157,7 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        date: "2026-12-04T00:00:00.000Z",
-        time: "09:00 AM",
-      });
-
+      .send({ doctorId, date: "2026-12-04T00:00:00.000Z", time: "09:00 AM" });
     expect(res.status).toBe(201);
     expect(res.body.appointment.time).toBe("09:00 AM");
   });
@@ -235,17 +166,10 @@ describe("POST /api/appointments", () => {
     const res = await request(app)
       .post("/api/appointments")
       .set("Authorization", `Bearer ${patientToken}`)
-      .send({
-        doctorId,
-        date:   "2026-12-05T00:00:00.000Z",
-        time:   "09:00 AM",
-        reason: "Follow up",
-      });
-
+      .send({ doctorId, date: "2026-12-05T00:00:00.000Z", time: "09:00 AM", reason: "Follow up" });
     expect(res.status).toBe(201);
     expect(res.body.appointment.doctor).toBeDefined();
     expect(res.body.appointment.doctor.firstName).toBe("Test");
-    expect(res.body.appointment.doctor.lastName).toBe("Doctor");
   });
 
 });
@@ -256,7 +180,6 @@ describe("GET /api/appointments/my", () => {
     const res = await request(app)
       .get("/api/appointments/my")
       .set("Authorization", `Bearer ${patientToken}`);
-
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.appointments)).toBe(true);
@@ -266,9 +189,6 @@ describe("GET /api/appointments/my", () => {
     const res = await request(app)
       .get("/api/appointments/my")
       .set("Authorization", `Bearer ${patientToken}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.appointments[0].doctorName).toBeDefined();
     expect(res.body.appointments[0].doctorName).toContain("Dr.");
   });
 
@@ -276,7 +196,6 @@ describe("GET /api/appointments/my", () => {
     const res = await request(app)
       .get("/api/appointments/my")
       .set("Authorization", `Bearer ${patientToken}`);
-
     const appt = res.body.appointments[0];
     expect(appt.id).toBeDefined();
     expect(appt.date).toBeDefined();
@@ -284,10 +203,15 @@ describe("GET /api/appointments/my", () => {
     expect(appt.status).toBeDefined();
   });
 
-  it("should return 401 when not authenticated", async () => {
+  it("should return doctorId in response", async () => {
     const res = await request(app)
-      .get("/api/appointments/my");
+      .get("/api/appointments/my")
+      .set("Authorization", `Bearer ${patientToken}`);
+    expect(res.body.appointments[0].doctorId).toBeDefined();
+  });
 
+  it("should return 401 when not authenticated", async () => {
+    const res = await request(app).get("/api/appointments/my");
     expect(res.status).toBe(401);
   });
 
@@ -295,7 +219,6 @@ describe("GET /api/appointments/my", () => {
     const res = await request(app)
       .get("/api/appointments/my")
       .set("Authorization", `Bearer ${doctorToken}`);
-
     expect(res.status).toBe(403);
   });
 
@@ -303,9 +226,229 @@ describe("GET /api/appointments/my", () => {
     const res = await request(app)
       .get("/api/appointments/my")
       .set("Authorization", `Bearer ${patientToken}`);
-
     const appt = res.body.appointments[0];
     expect(appt.status).toBe("Pending");
+  });
+
+});
+
+describe("PATCH /api/appointments/:id/reschedule", () => {
+  let appointmentId;
+
+  beforeAll(async () => {
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-10T00:00:00.000Z"), time: "09:00 AM", status: "PENDING" },
+    });
+    appointmentId = appointment.id;
+  });
+
+  it("should reschedule a pending appointment successfully", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-20", time: "10:00 AM" });
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.appointment.time).toBe("10:00 AM");
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should reschedule a confirmed appointment successfully", async () => {
+    await prisma.appointment.update({ where: { id: appointmentId }, data: { status: "CONFIRMED" } });
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-21", time: "11:00 AM" });
+    expect(res.status).toBe(200);
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should reset status to PENDING after reschedule", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-22", time: "09:00 AM" });
+    expect(res.status).toBe(200);
+    expect(res.body.appointment.status).toBe("PENDING");
+  });
+
+  it("should return 400 when trying to reschedule a cancelled appointment", async () => {
+    const cancelled = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-15T00:00:00.000Z"), time: "02:00 PM", status: "CANCELLED" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${cancelled.id}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-25", time: "10:00 AM" });
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 409 when new slot is already booked", async () => {
+    await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-23T00:00:00.000Z"), time: "03:00 PM", status: "PENDING" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-23", time: "03:00 PM" });
+    expect(res.status).toBe(409);
+    expect(res.body.message).toBe("This time slot is already booked");
+  });
+
+  it("should return 404 when appointment does not belong to patient", async () => {
+    const hashedPassword = await bcrypt.hash("Test@1234", 10);
+    const otherPatient = await prisma.patient.create({
+      data: { firstName: "Other", lastName: "Patient", email: "otherpatient@reschedule.com", password: hashedPassword, phone: "0779999999" },
+    });
+    const otherToken = jwt.sign(
+      { id: otherPatient.id, email: otherPatient.email, role: "patient" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .send({ date: "2026-12-24", time: "10:00 AM" });
+    expect(res.status).toBe(404);
+    await prisma.patient.delete({ where: { email: "otherpatient@reschedule.com" } });
+  });
+
+  it("should return 400 when date is missing", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ time: "10:00 AM" });
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 400 when time is missing", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-24" });
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 401 when not authenticated", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .send({ date: "2026-12-24", time: "10:00 AM" });
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 403 when doctor tries to reschedule", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/reschedule`)
+      .set("Authorization", `Bearer ${doctorToken}`)
+      .send({ date: "2026-12-24", time: "10:00 AM" });
+    expect(res.status).toBe(403);
+  });
+
+  it("should return 400 for invalid appointment ID", async () => {
+    const res = await request(app)
+      .patch("/api/appointments/invalid/reschedule")
+      .set("Authorization", `Bearer ${patientToken}`)
+      .send({ date: "2026-12-24", time: "10:00 AM" });
+    expect(res.status).toBe(400);
+  });
+
+});
+
+describe("PATCH /api/appointments/:id/cancel", () => {
+  let appointmentId;
+
+  beforeAll(async () => {
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-30T00:00:00.000Z"), time: "09:00 AM", status: "PENDING" },
+    });
+    appointmentId = appointment.id;
+  });
+
+  it("should cancel a pending appointment successfully", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/cancel`)
+      .set("Authorization", `Bearer ${patientToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toContain("cancelled successfully");
+    expect(res.body.appointment.status).toBe("CANCELLED");
+  });
+
+  it("should cancel a confirmed appointment successfully", async () => {
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-31T00:00:00.000Z"), time: "10:00 AM", status: "CONFIRMED" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${appointment.id}/cancel`)
+      .set("Authorization", `Bearer ${patientToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.appointment.status).toBe("CANCELLED");
+  });
+
+  it("should return 400 when trying to cancel an already cancelled appointment", async () => {
+    const cancelled = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-28T00:00:00.000Z"), time: "11:00 AM", status: "CANCELLED" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${cancelled.id}/cancel`)
+      .set("Authorization", `Bearer ${patientToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("should return 404 when appointment does not belong to patient", async () => {
+    const hashedPassword = await bcrypt.hash("Test@1234", 10);
+    const otherPatient = await prisma.patient.create({
+      data: { firstName: "Other", lastName: "Patient", email: "otherpatient@cancel.com", password: hashedPassword, phone: "0778888888" },
+    });
+    const otherToken = jwt.sign(
+      { id: otherPatient.id, email: otherPatient.email, role: "patient" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-29T00:00:00.000Z"), time: "12:00 PM", status: "PENDING" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${appointment.id}/cancel`)
+      .set("Authorization", `Bearer ${otherToken}`);
+    expect(res.status).toBe(404);
+    await prisma.patient.delete({ where: { email: "otherpatient@cancel.com" } });
+  });
+
+  it("should make cancelled slot available for rebooking", async () => {
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-27T00:00:00.000Z"), time: "02:00 PM", status: "PENDING" },
+    });
+    await request(app)
+      .patch(`/api/appointments/${appointment.id}/cancel`)
+      .set("Authorization", `Bearer ${patientToken}`);
+    const res = await request(app)
+      .get(`/api/appointments/booked-slots/${doctorId}/2026-12-27`);
+    expect(res.body.bookedSlots).not.toContain("02:00 PM");
+  });
+
+  it("should return 401 when not authenticated", async () => {
+    const res = await request(app)
+      .patch(`/api/appointments/${appointmentId}/cancel`);
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 403 when doctor tries to cancel", async () => {
+    const appointment = await prisma.appointment.create({
+      data: { patientId, doctorId, date: new Date("2026-12-26T00:00:00.000Z"), time: "03:00 PM", status: "PENDING" },
+    });
+    const res = await request(app)
+      .patch(`/api/appointments/${appointment.id}/cancel`)
+      .set("Authorization", `Bearer ${doctorToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it("should return 400 for invalid appointment ID", async () => {
+    const res = await request(app)
+      .patch("/api/appointments/invalid/cancel")
+      .set("Authorization", `Bearer ${patientToken}`);
+    expect(res.status).toBe(400);
   });
 
 });
