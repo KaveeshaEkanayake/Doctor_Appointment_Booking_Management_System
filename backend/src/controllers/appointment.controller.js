@@ -244,3 +244,44 @@ export const rescheduleAppointment = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+// PATCH /api/appointments/:id/cancel
+export const cancelAppointment = async (req, res) => {
+  const { id } = req.params;
+
+  const appointmentId = Number(id);
+  if (!Number.isInteger(appointmentId) || appointmentId <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid appointment ID" });
+  }
+
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patientId: req.user.id },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    if (!["PENDING", "CONFIRMED"].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending or confirmed appointments can be cancelled",
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data:  { status: "CANCELLED" },
+    });
+
+    return res.status(200).json({
+      success:     true,
+      message:     "Appointment cancelled successfully",
+      appointment: updated,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
