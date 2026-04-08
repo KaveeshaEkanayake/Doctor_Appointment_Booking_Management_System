@@ -10,8 +10,8 @@ import AvailableSlots                          from "../components/AvailableSlot
 const API = import.meta.env.VITE_API_URL;
 
 export default function MyAppointments() {
-  const navigate    = useNavigate();
-  const timeoutRef  = useRef(null);
+  const navigate   = useNavigate();
+  const timeoutRef = useRef(null);
 
   const [appointments,      setAppointments]      = useState([]);
   const [activeMenu,        setActiveMenu]        = useState("upcoming");
@@ -22,6 +22,9 @@ export default function MyAppointments() {
   const [rescheduleError,   setRescheduleError]   = useState("");
   const [rescheduleSuccess, setRescheduleSuccess] = useState("");
   const [isSubmitting,      setIsSubmitting]      = useState(false);
+  const [cancelAppt,        setCancelAppt]        = useState(null);
+  const [cancelError,       setCancelError]       = useState("");
+  const [isCancelling,      setIsCancelling]      = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -80,7 +83,7 @@ export default function MyAppointments() {
       } else {
         return (
           appt.status === "Completed" ||
-          appt.status === "Missed" ||
+          appt.status === "Missed"    ||
           appt.status === "Cancelled"
         );
       }
@@ -132,6 +135,35 @@ export default function MyAppointments() {
       setRescheduleError(err.response?.data?.message || "Failed to reschedule. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openCancel = (appt) => {
+    setCancelAppt(appt);
+    setCancelError("");
+  };
+
+  const closeCancel = () => {
+    setCancelAppt(null);
+    setCancelError("");
+  };
+
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    setCancelError("");
+
+    try {
+      await axios.patch(
+        `${API}/api/appointments/${cancelAppt.id}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchAppointments();
+      closeCancel();
+    } catch (err) {
+      setCancelError(err.response?.data?.message || "Failed to cancel. Please try again.");
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -188,6 +220,7 @@ export default function MyAppointments() {
                   const todayRow      = isToday(appointment.date);
                   const fullDateTime  = `${new Date(appointment.date).toLocaleDateString()} ${appointment.time}`;
                   const canReschedule = appointment.status === "Pending" || appointment.status === "Confirmed";
+                  const canCancel     = appointment.status === "Pending" || appointment.status === "Confirmed";
 
                   return (
                     <div key={index}>
@@ -224,7 +257,7 @@ export default function MyAppointments() {
                           </span>
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
                           {canReschedule && (
                             <button
                               type="button"
@@ -232,6 +265,15 @@ export default function MyAppointments() {
                               className="text-xs bg-white text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-400 px-3 py-0.5 rounded-full transition whitespace-nowrap"
                             >
                               Reschedule
+                            </button>
+                          )}
+                          {canCancel && (
+                            <button
+                              type="button"
+                              onClick={() => openCancel(appointment)}
+                              className="text-xs bg-white text-red-500 hover:bg-red-500 hover:text-white border border-red-400 px-3 py-0.5 rounded-full transition whitespace-nowrap"
+                            >
+                              Cancel
                             </button>
                           )}
                         </div>
@@ -255,12 +297,69 @@ export default function MyAppointments() {
         </div>
       </div>
 
+      {/* Cancel Confirmation Modal */}
+      {cancelAppt && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <span className="text-red-500 text-xl">⚠</span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-lg font-semibold text-gray-800 text-center mb-2">
+              Cancel Appointment?
+            </h2>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              Are you sure you want to cancel your appointment? This action cannot be undone and this slot will be released to other patients.
+            </p>
+
+            {/* Buttons */}
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isCancelling}
+              className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl mb-3 transition disabled:opacity-50"
+            >
+              {isCancelling ? "Cancelling..." : "Yes, Cancel Appointment"}
+            </button>
+            <button
+              type="button"
+              onClick={closeCancel}
+              disabled={isCancelling}
+              className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition"
+            >
+              No, Keep Appointment
+            </button>
+
+            {/* Selected Appointment Info */}
+            <div className="mt-4 bg-gray-50 rounded-xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                {cancelAppt.doctorName.charAt(4)}
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase font-semibold">Selected Appointment</p>
+                <p className="text-xs font-medium text-gray-700">
+                  {cancelAppt.doctorName} · {new Date(cancelAppt.date).toLocaleDateString("default", { month: "short", day: "numeric" })}, {cancelAppt.time}
+                </p>
+              </div>
+            </div>
+
+            {cancelError && (
+              <p className="text-red-500 text-sm mt-3 text-center">{cancelError}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Reschedule Modal */}
       {rescheduleAppt && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
 
-            {/* Modal Header */}
             <div className="flex justify-between items-center px-6 pt-6 pb-4 border-b">
               <div>
                 <h2 className="text-base font-semibold text-gray-800">Reschedule appointment</h2>
@@ -276,7 +375,6 @@ export default function MyAppointments() {
               </button>
             </div>
 
-            {/* Step Indicator */}
             <div className="flex items-center gap-2 px-6 py-3 border-b bg-gray-50 text-xs">
               <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">1</span>
               <span className="font-medium text-blue-600">Select date</span>
@@ -289,8 +387,6 @@ export default function MyAppointments() {
             </div>
 
             <div className="px-6 py-4 space-y-4">
-
-              {/* Current Appointment Info */}
               <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide mb-1">Current appointment</p>
@@ -303,7 +399,6 @@ export default function MyAppointments() {
                 </span>
               </div>
 
-              {/* Date and Slots side by side */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DateSelector
                   selectedDate={selectedDate}
@@ -323,7 +418,6 @@ export default function MyAppointments() {
                 </div>
               </div>
 
-              {/* Selected summary */}
               {selectedDate && selectedTime && (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                   <p className="text-xs text-blue-500 font-medium">New appointment time</p>
@@ -333,7 +427,6 @@ export default function MyAppointments() {
                 </div>
               )}
 
-              {/* Info note */}
               <p className="text-xs text-gray-400 flex items-center gap-1">
                 <span>ⓘ</span> Doctor will need to re-confirm after rescheduling
               </p>
@@ -346,7 +439,6 @@ export default function MyAppointments() {
               )}
             </div>
 
-            {/* Footer */}
             <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
               <p className="text-xs text-gray-400">
                 {!selectedDate ? "Step 1 of 3 — choose a new date" : !selectedTime ? "Step 2 of 3 — pick a time slot" : "Step 3 of 3 — confirm your reschedule"}

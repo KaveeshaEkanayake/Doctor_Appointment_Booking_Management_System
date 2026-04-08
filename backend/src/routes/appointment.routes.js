@@ -6,6 +6,7 @@ import {
   getMyAppointments,
   getBookedSlots,
   rescheduleAppointment,
+  cancelAppointment,
 } from "../controllers/appointment.controller.js";
 import validate from "../middlewares/validate.middleware.js";
 
@@ -56,6 +57,17 @@ router.patch(
   ],
   validate,
   rescheduleAppointment
+);
+
+router.patch(
+  "/:id/cancel",
+  authenticate,
+  authorizePatient,
+  [
+    param("id").isInt().withMessage("Appointment ID must be an integer"),
+  ],
+  validate,
+  cancelAppointment
 );
 
 export default router;
