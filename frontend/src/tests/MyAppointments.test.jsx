@@ -93,7 +93,6 @@ describe('MyAppointments', () => {
   it('should render My Appointments heading', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('My Appointments')).toBeDefined()
     })
@@ -102,7 +101,6 @@ describe('MyAppointments', () => {
   it('should render pending appointment doctor name', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Dr. Tharindu Herath').length).toBeGreaterThan(0)
     })
@@ -111,7 +109,6 @@ describe('MyAppointments', () => {
   it('should render Pending status badge', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('Pending')).toBeDefined()
     })
@@ -120,7 +117,6 @@ describe('MyAppointments', () => {
   it('should render Confirmed status badge', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('Confirmed')).toBeDefined()
     })
@@ -129,7 +125,6 @@ describe('MyAppointments', () => {
   it('should show Reschedule button for Pending appointment', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       const buttons = screen.getAllByText('Reschedule')
       expect(buttons.length).toBeGreaterThan(0)
@@ -139,7 +134,6 @@ describe('MyAppointments', () => {
   it('should show Reschedule button for Confirmed appointment', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       const buttons = screen.getAllByText('Reschedule')
       expect(buttons.length).toBe(2)
@@ -149,7 +143,6 @@ describe('MyAppointments', () => {
   it('should not show Reschedule button for Cancelled appointment', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: [mockAppointments[2]] } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.queryByText('Reschedule')).toBeNull()
     })
@@ -158,13 +151,10 @@ describe('MyAppointments', () => {
   it('should open reschedule modal when Reschedule is clicked', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Reschedule appointment')).toBeDefined()
     })
@@ -173,13 +163,10 @@ describe('MyAppointments', () => {
   it('should show doctor name in reschedule modal', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getAllByText('Dr. Tharindu Herath').length).toBeGreaterThan(0)
     })
@@ -188,13 +175,10 @@ describe('MyAppointments', () => {
   it('should show step indicator in reschedule modal', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Select date')).toBeDefined()
       expect(screen.getByText('Pick time slot')).toBeDefined()
@@ -205,55 +189,42 @@ describe('MyAppointments', () => {
   it('should show current appointment info in modal', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Current appointment')).toBeDefined()
     })
   })
 
-  it('should close modal when Cancel is clicked', async () => {
+  it('should close reschedule modal when X is clicked', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Reschedule appointment')).toBeDefined()
     })
-
-    fireEvent.click(screen.getByText('Cancel'))
-
+    fireEvent.click(screen.getByText('✕'))
     await waitFor(() => {
       expect(screen.queryByText('Reschedule appointment')).toBeNull()
     })
   })
 
-  it('should close modal when X is clicked', async () => {
+  it('should close reschedule modal when Cancel button is clicked', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Reschedule appointment')).toBeDefined()
     })
-
-    fireEvent.click(screen.getByText('✕'))
-
+    fireEvent.click(screen.getByText('Confirm reschedule').closest('div').querySelector('button:first-child'))
     await waitFor(() => {
       expect(screen.queryByText('Reschedule appointment')).toBeNull()
     })
@@ -262,13 +233,10 @@ describe('MyAppointments', () => {
   it('should show Confirm reschedule button disabled when no date selected', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       const confirmBtn = screen.getByText('Confirm reschedule')
       expect(confirmBtn.disabled).toBe(true)
@@ -278,25 +246,18 @@ describe('MyAppointments', () => {
   it('should call reschedule API with correct data', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Select Date')).toBeDefined()
     })
-
     fireEvent.click(screen.getByText('Select Date'))
     fireEvent.click(screen.getByText('Select Slot'))
-
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     axios.patch.mockResolvedValueOnce({ data: { success: true } })
-
     fireEvent.click(screen.getByText('Confirm reschedule'))
-
     await waitFor(() => {
       expect(axios.patch).toHaveBeenCalledWith(
         expect.stringContaining('/api/appointments/1/reschedule'),
@@ -309,27 +270,20 @@ describe('MyAppointments', () => {
   it('should show error when reschedule API fails', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getAllByText('Reschedule').length).toBeGreaterThan(0)
     })
-
     fireEvent.click(screen.getAllByText('Reschedule')[0])
-
     await waitFor(() => {
       expect(screen.getByText('Select Date')).toBeDefined()
     })
-
     fireEvent.click(screen.getByText('Select Date'))
     fireEvent.click(screen.getByText('Select Slot'))
-
     axios.patch.mockRejectedValueOnce({
       response: { data: { message: "This time slot is already booked" } }
     })
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: mockAppointments } })
-
     fireEvent.click(screen.getByText('Confirm reschedule'))
-
     await waitFor(() => {
       expect(screen.getByText('This time slot is already booked')).toBeDefined()
     })
@@ -338,7 +292,6 @@ describe('MyAppointments', () => {
   it('should show empty state when no upcoming appointments', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: [] } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('No Appointments Scheduled')).toBeDefined()
     })
@@ -347,7 +300,6 @@ describe('MyAppointments', () => {
   it('should show Book an Appointment button when no appointments', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: [] } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('Book an Appointment')).toBeDefined()
     })
@@ -356,11 +308,9 @@ describe('MyAppointments', () => {
   it('should navigate to /doctors when Book an Appointment clicked', async () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: [] } })
     renderPage()
-
     await waitFor(() => {
       expect(screen.getByText('Book an Appointment')).toBeDefined()
     })
-
     fireEvent.click(screen.getByText('Book an Appointment'))
     expect(mockNavigate).toHaveBeenCalledWith('/doctors')
   })
