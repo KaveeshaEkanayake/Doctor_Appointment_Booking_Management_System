@@ -5,24 +5,31 @@ import { FiCalendar, FiClock, FiUser, FiLogOut, FiMenu, FiX } from "react-icons/
 import logoImg from "../assets/Logo04.PNG";
 
 export default function DoctorLayout({ children }) {
-  const navigate = useNavigate();
+  const navigate       = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem("user")) || {}; }
+    catch { return {}; }
+  })();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
   const navItems = [
-    { to: "/doctor/dashboard", icon: RiDashboardLine, label: "Dashboard" },
-    { to: "/doctor/appointments", icon: FiCalendar, label: "My Appointments" },
-    { to: "/doctor/availability", icon: FiClock, label: "My Availability" },
-    { to: "/doctor/profile", icon: FiUser, label: "Profile" },
+    { to: "/doctor/dashboard",     icon: RiDashboardLine, label: "Dashboard"        },
+    { to: "/doctor/appointments",  icon: FiCalendar,      label: "My Appointments"  },
+    { to: "/doctor/availability",  icon: FiClock,         label: "My Availability"  },
+    { to: "/doctor/profile",       icon: FiUser,          label: "Profile"          },
   ];
 
   return (
     <div className="flex h-screen bg-[#F6FAFF]">
+
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -37,8 +44,8 @@ export default function DoctorLayout({ children }) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Logo + close button */}
         <div>
+          {/* Logo + close */}
           <div className="px-6 py-6 flex items-center justify-between">
             <img src={logoImg} alt="MediCare Logo" className="h-10" />
             <button
@@ -94,8 +101,11 @@ export default function DoctorLayout({ children }) {
             <FiMenu className="text-2xl" />
           </button>
           <img src={logoImg} alt="MediCare Logo" className="h-8" />
-          <div className="w-8" />
+          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+            {user.firstName?.[0] ?? "D"}
+          </div>
         </div>
+
         {children}
       </main>
     </div>

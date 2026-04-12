@@ -3,12 +3,11 @@ import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL environment variable is not set.");
-
 const adapter = new PrismaPg({ 
-  connectionString: databaseUrl,
-  max: 1  // ← limit connections for Neon.tech free tier
+  connectionString: process.env.DATABASE_URL,
+  max: 3,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
 const prisma = new PrismaClient({ adapter });

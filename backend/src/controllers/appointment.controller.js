@@ -17,17 +17,17 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Doctor is not available" });
     }
 
-    // Use date-only string to avoid timezone shifts
     const dateStr    = date.split("T")[0];
     const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
     const endOfDay   = new Date(`${dateStr}T23:59:59.999Z`);
 
+    // Check slot not already booked — exclude CANCELLED
     const existing = await prisma.appointment.findFirst({
       where: {
         doctorId: parseInt(doctorId),
-        date: { gte: startOfDay, lte: endOfDay },
+        date:     { gte: startOfDay, lte: endOfDay },
         time,
-        status: { notIn: ["CANCELLED"] },
+        status:   { notIn: ["CANCELLED"] },
       },
     });
 
@@ -65,13 +65,6 @@ export const createAppointment = async (req, res) => {
       appointment,
     });
   } catch (err) {
-    // Handle unique constraint violation
-    if (err.code === "P2002") {
-      return res.status(409).json({
-        success: false,
-        message: "This time slot is already booked",
-      });
-    }
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -96,15 +89,17 @@ export const getMyAppointments = async (req, res) => {
     });
 
     const formatted = appointments.map((appt) => ({
-      id:             appt.id,
-      doctorName:     `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
-      specialisation: appt.doctor.specialisation,
-      profilePhoto:   appt.doctor.profilePhoto,
-      date:           appt.date,
-      time:           appt.time,
-      reason:         appt.reason,
-      status:         appt.status.charAt(0) + appt.status.slice(1).toLowerCase(),
-    }));
+  id:              appt.id,
+  doctorId:        appt.doctorId,
+  doctorName:      `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
+  specialisation:  appt.doctor.specialisation,
+  profilePhoto:    appt.doctor.profilePhoto,
+  date:            appt.date,
+  time:            appt.time,
+  reason:          appt.reason,
+  status:          appt.status.charAt(0) + appt.status.slice(1).toLowerCase(),
+  rejectionReason: appt.rejectionReason,
+}));
 
     return res.status(200).json({ success: true, appointments: formatted });
   } catch (err) {
@@ -117,13 +112,11 @@ export const getMyAppointments = async (req, res) => {
 export const getBookedSlots = async (req, res) => {
   const { doctorId, date } = req.params;
 
-  // Validate doctorId
   const doctorIdNum = Number(doctorId);
   if (!Number.isInteger(doctorIdNum)) {
     return res.status(400).json({ success: false, message: "Invalid doctorId" });
   }
 
-  // Validate date format YYYY-MM-DD
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(date)) {
     return res.status(400).json({
@@ -152,6 +145,141 @@ export const getBookedSlots = async (req, res) => {
     const bookedSlots = appointments.map((a) => a.time);
 
     return res.status(200).json({ success: true, bookedSlots });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+  
+};
+// PATCH /api/appointments/:id/reschedule
+export const rescheduleAppointment = async (req, res) => {
+  const { id }        = req.params;
+  const { date, time } = req.body;
+
+  const appointmentId = Number(id);
+  if (!Number.isInteger(appointmentId) || appointmentId <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid appointment ID" });
+  }
+
+  if (!date || !time) {
+    return res.status(400).json({ success: false, message: "Date and time are required" });
+  }
+
+  try {
+    // Find the appointment and verify it belongs to the patient
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patientId: req.user.id },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    // Only PENDING or CONFIRMED appointments can be rescheduled
+    if (!["PENDING", "CONFIRMED"].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending or confirmed appointments can be rescheduled",
+      });
+    }
+
+    // Appointment must be in the future
+    const now = new Date();
+    if (new Date(appointment.date) <= now) {
+      return res.status(400).json({
+        success: false,
+        message: "Only future appointments can be rescheduled",
+      });
+    }
+
+    const dateStr    = date.split("T")[0];
+    const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
+    const endOfDay   = new Date(`${dateStr}T23:59:59.999Z`);
+
+    // New date must be in the future
+    if (startOfDay <= now) {
+      return res.status(400).json({
+        success: false,
+        message: "Reschedule date must be in the future",
+      });
+    }
+
+    // Check new slot is not already booked — exclude current appointment and CANCELLED
+    const conflict = await prisma.appointment.findFirst({
+      where: {
+        doctorId: appointment.doctorId,
+        date:     { gte: startOfDay, lte: endOfDay },
+        time,
+        status:   { notIn: ["CANCELLED"] },
+        NOT:      { id: appointmentId },
+      },
+    });
+
+    if (conflict) {
+      return res.status(409).json({
+        success: false,
+        message: "This time slot is already booked",
+      });
+    }
+
+    // Update appointment
+    const updated = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        date:           startOfDay,
+        time,
+        status:         "PENDING",
+        rejectionReason: null,
+      },
+    });
+
+    return res.status(200).json({
+      success:     true,
+      message:     "Appointment rescheduled successfully. Awaiting doctor confirmation.",
+      appointment: updated,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+// PATCH /api/appointments/:id/cancel
+export const cancelAppointment = async (req, res) => {
+  const { id } = req.params;
+
+  const appointmentId = Number(id);
+  if (!Number.isInteger(appointmentId) || appointmentId <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid appointment ID" });
+  }
+
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patientId: req.user.id },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    if (!["PENDING", "CONFIRMED"].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending or confirmed appointments can be cancelled",
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data:  { status: "CANCELLED" },
+    });
+
+    return res.status(200).json({
+      success:     true,
+      message:     "Appointment cancelled successfully",
+      appointment: updated,
+    });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
