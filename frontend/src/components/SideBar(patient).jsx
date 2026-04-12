@@ -25,9 +25,9 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
       </div>
 
       <div className="space-y-6">
-        <NavLink to="/doctors" className={linkClass}>
-          <FaHome /> Dashboard
-        </NavLink>
+        <NavLink to="/patient/dashboard" className={linkClass}>
+  <FaHome /> Dashboard
+</NavLink>
 
         <NavLink to="/my-appointments" className={linkClass}>
           <FaCalendarAlt /> Appointment
