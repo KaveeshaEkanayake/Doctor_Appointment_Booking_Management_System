@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
+import PatientDashboard from "./pages/PatientDashboard";
 
 function App() {
   return (
@@ -95,6 +96,14 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+  path="/patient/dashboard"
+  element={
+    <ProtectedRoute allowedRole="patient">
+      <PatientDashboard />
+    </ProtectedRoute>
+  }
+/>
     </Routes>
   );
 }
