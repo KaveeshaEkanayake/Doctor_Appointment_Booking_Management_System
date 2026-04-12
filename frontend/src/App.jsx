@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
+import MySchedule from "./pages/MySchedule";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/doctor/schedule" element={<MySchedule />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
