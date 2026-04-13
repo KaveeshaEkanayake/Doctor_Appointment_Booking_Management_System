@@ -21,6 +21,8 @@ import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 import PatientDashboard from "./pages/PatientDashboard";
+import PasswordResetReq from "./pages/PasswordResetReq";
+import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";   
 
 function App() {
   return (
@@ -96,6 +98,10 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/forgot-password" element={<PasswordResetReq />} />
+      <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} /> 
+        
       <Route
   path="/patient/dashboard"
   element={
