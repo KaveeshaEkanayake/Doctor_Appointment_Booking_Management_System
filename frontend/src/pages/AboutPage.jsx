@@ -92,7 +92,7 @@ export default function AboutPage() {
 
       <div className="w-full h-full overflow-x-hidden bg-white">
 
-        {/* ── Hero Section ── */}
+        {/* Hero Section */}
         <section className="relative bg-blue-50 py-10 sm:py-12 lg:py-14">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-0 w-28 h-28 sm:w-40 sm:h-40 bg-blue-200 rounded-full opacity-30" />
@@ -111,7 +111,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── About Section ── */}
+        {/* About Section */}
         <section className="w-full bg-white py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-1">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[48%_52%] gap-10 xl:gap-16 items-center">
 
@@ -179,7 +179,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Why Choose Us ── */}
+        {/* Why Choose Us */}
         <section className="py-1 sm:py-16 lg:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10 sm:mb-12">
@@ -208,7 +208,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── CTA Banner ── */}
+        {/* CTA Banner */}
         <section className="relative bg-blue-500 py-8 px-4 md:px-6 lg:px-12 max-w-7xl mx-auto my-12 rounded-2xl overflow-hidden h-[450px]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center relative z-10">
             <div className="text-center md:text-left text-white">
@@ -233,7 +233,7 @@ export default function AboutPage() {
           <div className="absolute right-10 top-1/2 w-24 h-24 md:w-40 md:h-40 bg-blue-400 rounded-full opacity-30 transform -translate-y-1/2" />
         </section>
 
-        {/* ── Doctors Section ── */}
+        {/* Doctors Section */}
         <section className="px-10 py-16 bg-[#F6FAFF]">
           <h3 className="text-2xl font-semibold text-center mb-10 text-[#012047]">
             Our Specialist Doctors
@@ -258,7 +258,6 @@ export default function AboutPage() {
                   ‹
                 </button>
               )}
-
               <div
                 ref={doctorRef}
                 className="flex gap-6 overflow-x-auto pb-4 scroll-smooth"
@@ -306,7 +305,6 @@ export default function AboutPage() {
                   </div>
                 ))}
               </div>
-
               {showRight && (
                 <button
                   onClick={() => doctorRef.current?.scrollBy({ left: 250, behavior: "smooth" })}
@@ -328,7 +326,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── FAQ Section ── */}
+        {/* FAQ Section */}
         <section className="py-16 bg-white px-4 md:px-8 lg:px-16">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div>
@@ -341,7 +339,6 @@ export default function AboutPage() {
                 className="w-full h-full max-w-100 rounded-lg object-cover"
               />
             </div>
-
             <div className="mt-0 md:mt-0 lg:mt-10">
               <div className="space-y-6">
                 <div className="mt-0 md:mt-6 lg:mt-20">
@@ -354,7 +351,6 @@ export default function AboutPage() {
                     & confirm your booking.
                   </p>
                 </div>
-
                 {[
                   "Can I Request A Specific Doctor When Booking My Appointment?",
                   "What Should I Do If I Need To Cancel Or Reschedule My Appointment?",
