@@ -15,11 +15,12 @@ model Patient {
   phone        String
   address      String?
   dateOfBirth  DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @default(now()) @updatedAt
   appointments Appointment[]
 }
-
 model Doctor {
   id                  Int            @id @default(autoincrement())
   firstName           String

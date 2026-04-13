@@ -43,12 +43,15 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+
+      {/* Password reset routes */}
       <Route path="/forgot-password" element={<PasswordResetReq />} />
       <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
       <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
       <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
-      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
 
+      {/* Patient account */}
+      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />

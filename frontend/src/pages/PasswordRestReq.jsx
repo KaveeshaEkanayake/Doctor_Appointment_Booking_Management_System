@@ -1,32 +1,52 @@
 import React, { useState } from "react";
 import logoImg from "../assets/Logo04.PNG";
+import { useNavigate } from "react-router-dom";
+
+const API = import.meta.env.VITE_API_URL;
 
 export default function PasswordResetReq() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess(true);
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(`${API}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to send reset link");
+      }
+
+      setSuccess(true);
+      navigate("/forgot-password/sent");
+
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-blue-100 p-20 rounded-lg shadow-md w-[700px] justify-center">
-
-        {/* Logo */}
         <div className="text-center mb-5 w-full">
-          <img
-            src={logoImg}
-            alt="MediCare Logo"
-            className="mx-auto h-10 w-22"
-          />
+          <img src={logoImg} alt="MediCare Logo" className="mx-auto h-10 w-22" />
         </div>
-
-        {/* Inner white card */}
         <div className="bg-white rounded-lg shadow-md w-full p-8 flex items-center justify-center">
           <div className="bg-white rounded-lg w-[300px] p-8">
-
             {success ? (
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -62,11 +82,15 @@ export default function PasswordResetReq() {
                     className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
+                  {error && (
+                    <p className="text-red-500 text-xs text-center">{error}</p>
+                  )}
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-md hover:bg-blue-700 transition"
+                    disabled={loading}
+                    className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
                   >
-                    Send reset link
+                    {loading ? "Sending..." : "Send reset link"}
                   </button>
                 </form>
                 <div className="text-center mt-4">
@@ -76,7 +100,6 @@ export default function PasswordResetReq() {
                 </div>
               </>
             )}
-
           </div>
         </div>
       </div>
