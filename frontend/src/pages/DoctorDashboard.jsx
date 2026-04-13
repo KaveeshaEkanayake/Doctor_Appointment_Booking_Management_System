@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom";
 import DoctorLayout from "../layouts/DoctorLayout";
 import { FiCalendar, FiUsers, FiAlertTriangle } from "react-icons/fi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import doctorprofile from "../assets/doctorprofile.jpg"
 import { FiBell } from "react-icons/fi";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
-
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [stats, setStats] = useState({
     today: 0,
@@ -20,60 +21,52 @@ export default function DoctorDashboard() {
 
   const [appointments, setAppointments] = useState([]);
 
-  
+  // Get doctor info from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const doctorName = user.firstName
+    ? `Dr. ${user.firstName} ${user.lastName}`
+    : "Doctor";
+  const profilePhoto = user.profilePhoto || null;
+
+  // Live clock
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
     }, 60000);
-
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ MOCK DATA (replace later with API)
+  // Fetch dashboard data from backend
   useEffect(() => {
-    setTimeout(() => {
-      setStats({
-        today: 12,
-        patients: 1240,
-        pending: 4,
-      });
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_URL}/api/doctor/dashboard`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-      setAppointments([
-        {
-          name: "Nimali Dissanayaka",
-          time: "09:00 AM",
-          reason: "Annual Checkup",
-          status: "Confirmed",
-          hasNotes: true,
-        },
-        {
-          name: "Kalum Silva",
-          time: "10:30 AM",
-          reason: "Follow-up",
-          status: "Pending",
-          hasNotes: true,
-        },
-        {
-          name: "Janidu Silva",
-          time: "01:00 PM",
-          reason: "Flu Symptoms",
-          status: "Completed",
-          hasNotes: false,
-        },
-        {
-          name: "Amali Perera",
-          time: "02:15 PM",
-          reason: "Consultation",
-          status: "Cancelled",
-          hasNotes: true,
-        },
-      ]);
+        const data = await res.json();
 
-      setLoading(false);
-    }, 1000);
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || "Failed to load dashboard");
+        }
+
+        setStats(data.data.stats);
+        setAppointments(data.data.schedule);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load dashboard data. Please refresh.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
   }, []);
 
- 
   const formatDate = (date) => {
     return date.toLocaleDateString("en-US", {
       weekday: "long",
@@ -83,7 +76,6 @@ export default function DoctorDashboard() {
     });
   };
 
- 
   const statusStyle = (status) => {
     switch (status) {
       case "Confirmed":
@@ -103,25 +95,19 @@ export default function DoctorDashboard() {
     <DoctorLayout>
       <div className="p-4 sm:p-6 md:p-8">
 
-        {/*  Header */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-              Welcome back, Dr. Arjun
+              Welcome back, {doctorName}
             </h1>
-            <p className="text-gray-500 text-sm">
-              {formatDate(currentDate)}
-            </p>
+            <p className="text-gray-500 text-sm">{formatDate(currentDate)}</p>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4">
-
             {/* Notification */}
             <button className="relative p-2 rounded-full hover:bg-gray-100 transition">
               <FiBell className="text-xl text-gray-600" />
-
-              {/* Notification Dot */}
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
@@ -130,24 +116,35 @@ export default function DoctorDashboard() {
               onClick={() => navigate("/doctor/profile")}
               className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded-lg transition"
             >
-              <img
-                src={doctorprofile}
-                onError={(e) => (e.target.src = defaultProfile)}
-                alt="profile"
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border"
-              />
+              {profilePhoto ? (
+                <img
+                  src={profilePhoto}
+                  alt="profile"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border"
+                />
+              ) : (
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 flex items-center justify-center border">
+                  <span className="text-blue-600 text-sm font-bold">
+                    {user.firstName?.[0]}{user.lastName?.[0]}
+                  </span>
+                </div>
+              )}
               <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                Dr. Arjun
+                {doctorName}
               </span>
             </div>
-
           </div>
         </div>
 
-        {/*  Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
-          {/* Today */}
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div
             onClick={() => navigate("/doctor/appointments")}
             className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border flex items-center gap-4 cursor-pointer hover:shadow-md hover:scale-[1.01] transition"
@@ -165,11 +162,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          {/* Patients */}
-          <div
-            onClick={() => navigate("/doctor/patients")}
-            className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border flex items-center gap-4 cursor-pointer hover:shadow-md hover:scale-[1.01] transition"
-          >
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border flex items-center gap-4">
             <div className="bg-purple-100 p-3 rounded-lg">
               <FiUsers className="text-purple-500 text-xl" />
             </div>
@@ -183,9 +176,8 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          {/* Pending */}
           <div
-            onClick={() => navigate("/doctor/requests")}
+            onClick={() => navigate("/doctor/appointments")}
             className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border flex items-center gap-4 cursor-pointer hover:shadow-md hover:scale-[1.01] transition"
           >
             <div className="bg-yellow-100 p-3 rounded-lg">
@@ -200,17 +192,14 @@ export default function DoctorDashboard() {
               )}
             </div>
           </div>
-
         </div>
 
         {/* Schedule */}
         <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800">
               Today's Schedule
             </h2>
-
             <button
               onClick={() => navigate("/doctor/appointments")}
               className="text-blue-500 text-sm hover:underline"
@@ -220,29 +209,32 @@ export default function DoctorDashboard() {
           </div>
 
           {loading ? (
-            <AiOutlineLoading3Quarters className="animate-spin" />
+            <div className="flex justify-center py-8">
+              <AiOutlineLoading3Quarters className="animate-spin text-2xl text-blue-500" />
+            </div>
+          ) : appointments.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <FiCalendar className="text-4xl mx-auto mb-2" />
+              <p>No appointments scheduled for today</p>
+            </div>
           ) : (
             <>
-              {/* MOBILE */}
+              {/* Mobile */}
               <div className="sm:hidden space-y-4">
                 {appointments.map((item, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-gray-500">{item.time}</p>
                     <p className="text-sm">{item.reason}</p>
-
                     <div className="flex justify-between items-center mt-2">
                       <span className={statusStyle(item.status)}>
                         {item.status}
                       </span>
-
-                      {item.hasNotes ? (
-                        <button className="text-blue-500 text-xs">
-                          View
-                        </button>
+                      {item.notes ? (
+                        <button className="text-blue-500 text-xs">View Notes</button>
                       ) : (
                         <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-                          Add
+                          Add Notes
                         </button>
                       )}
                     </div>
@@ -250,10 +242,9 @@ export default function DoctorDashboard() {
                 ))}
               </div>
 
-              {/* DESKTOP */}
+              {/* Desktop */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
-
                   <thead className="text-gray-400 border-b text-xs uppercase">
                     <tr>
                       <th className="py-3 text-left">Patient</th>
@@ -263,7 +254,6 @@ export default function DoctorDashboard() {
                       <th className="text-right">Actions</th>
                     </tr>
                   </thead>
-
                   <tbody className="divide-y">
                     {appointments.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
@@ -276,7 +266,7 @@ export default function DoctorDashboard() {
                           </span>
                         </td>
                         <td className="text-right">
-                          {item.hasNotes ? (
+                          {item.notes ? (
                             <button className="text-gray-500 hover:text-blue-600 hover:underline">
                               View Notes
                             </button>
@@ -289,13 +279,11 @@ export default function DoctorDashboard() {
                       </tr>
                     ))}
                   </tbody>
-
                 </table>
               </div>
             </>
           )}
         </div>
-
       </div>
     </DoctorLayout>
   );

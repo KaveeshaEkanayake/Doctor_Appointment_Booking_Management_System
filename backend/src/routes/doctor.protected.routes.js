@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import { authenticate, authorizeDoctor } from "../middlewares/auth.middleware.js";
 import { getProfile, updateProfile } from "../controllers/doctor.profile.controller.js";
 import { getAvailability, updateAvailability } from "../controllers/availability.controller.js";
+import { getDashboardStats } from "../controllers/doctor.dashboard.controller.js";
 
 const router = express.Router();
 
@@ -40,5 +41,7 @@ router.put("/profile", authenticate, authorizeDoctor, updateProfileValidation, u
 // Availability routes
 router.get("/availability", authenticate, authorizeDoctor, getAvailability);
 router.put("/availability", authenticate, authorizeDoctor, updateAvailabilityValidation, updateAvailability);
+
+router.get("/dashboard", authenticate, authorizeDoctor, getDashboardStats);
 
 export default router;

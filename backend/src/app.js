@@ -17,7 +17,9 @@ app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
       "http://localhost:5173",
-      "https://doctor-appointment-booking-manageme.vercel.app"
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://doctor-appointment-booking-manageme.vercel.app"
     ];
     if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
       callback(null, true);
