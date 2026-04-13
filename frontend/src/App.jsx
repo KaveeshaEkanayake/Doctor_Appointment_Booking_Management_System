@@ -25,6 +25,7 @@ import PasswordResetReq from "./pages/PasswordRestReq";
 import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
+import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
       <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
       <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
       <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
+      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
 
 
       {/* Admin public */}
