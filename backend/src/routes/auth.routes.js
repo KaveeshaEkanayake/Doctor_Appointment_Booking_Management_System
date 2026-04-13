@@ -2,6 +2,8 @@ import { Router } from "express";
 import { body } from "express-validator";
 import { registerPatient, loginPatient } from "../controllers/patient.controller.js";
 import validate from "../middlewares/validate.middleware.js";
+import { forgotPassword, resetPassword } from "../controllers/patient.password.controller.js";
+
 
 const router = Router();
 
@@ -46,5 +48,8 @@ router.post("/register", registerValidation, validate, registerPatient);
 
 // POST /api/auth/login
 router.post("/login", loginValidation, validate, loginPatient);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

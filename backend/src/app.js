@@ -55,4 +55,5 @@ app.use("/api/patient",      patientProtectedRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/doctor",       doctorAppointmentRoutes);
 
+
 export default app;
