@@ -23,6 +23,8 @@ import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 import PatientDashboard from "./pages/PatientDashboard";
 import PasswordResetReq from "./pages/PasswordRestReq";
 import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
+import PasswordResetPage from "./pages/PasswordResetPage";
+import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 
 function App() {
   return (
@@ -42,6 +44,9 @@ function App() {
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/forgot-password" element={<PasswordResetReq />} />
       <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
+      <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
+      <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
+
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
