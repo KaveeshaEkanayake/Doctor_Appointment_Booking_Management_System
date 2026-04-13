@@ -21,8 +21,8 @@ import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 import PatientDashboard from "./pages/PatientDashboard";
-import PasswordResetReq from "./pages/PasswordResetReq";
-import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";   
+import PasswordResetReq from "./pages/PasswordRestReq";
+import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
 
 function App() {
   return (
@@ -40,6 +40,8 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/forgot-password" element={<PasswordResetReq />} />
+      <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -53,7 +55,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/admin/doctors"
         element={
@@ -72,7 +73,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-    
       <Route
         path="/doctor/profile"
         element={
@@ -88,7 +88,6 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-
       />
       <Route
         path="/doctor/appointments"
@@ -99,17 +98,15 @@ function App() {
         }
       />
 
-      <Route path="/forgot-password" element={<PasswordResetReq />} />
-      <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} /> 
-        
+      {/* Patient protected */}
       <Route
-  path="/patient/dashboard"
-  element={
-    <ProtectedRoute allowedRole="patient">
-      <PatientDashboard />
-    </ProtectedRoute>
-  }
-/>
+        path="/patient/dashboard"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
