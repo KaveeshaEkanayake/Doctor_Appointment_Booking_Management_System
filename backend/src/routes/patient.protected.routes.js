@@ -3,6 +3,7 @@ import { body }   from "express-validator";
 import { authenticate, authorizePatient } from "../middlewares/auth.middleware.js";
 import { getPatientProfile, updatePatientProfile } from "../controllers/patient.profile.controller.js";
 import validate from "../middlewares/validate.middleware.js";
+import { getPatientDashboardStats } from "../controllers/patient.dashboard.controller.js";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.put(
   validate,
   updatePatientProfile
 );
+router.get("/dashboard", authenticate, authorizePatient, getPatientDashboardStats);
 
 export default router;

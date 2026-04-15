@@ -20,7 +20,16 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
+<<<<<<< HEAD
 import MySchedule from "./pages/MySchedule";
+=======
+import PatientDashboard from "./pages/PatientDashboard";
+import PasswordResetReq from "./pages/PasswordRestReq";
+import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
+import PasswordResetPage from "./pages/PasswordResetPage";
+import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
+import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
+>>>>>>> 4c4d2fbcfa863a5fa4c8797286c8c3627b33c9ab
 
 function App() {
   return (
@@ -40,6 +49,15 @@ function App() {
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
 
+      {/* Password reset routes */}
+      <Route path="/forgot-password" element={<PasswordResetReq />} />
+      <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
+      <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
+      <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
+
+      {/* Patient account */}
+      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
+
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
 
@@ -52,7 +70,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/admin/doctors"
         element={
@@ -71,7 +88,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-    
       <Route
         path="/doctor/profile"
         element={
@@ -87,13 +103,22 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-
       />
       <Route
         path="/doctor/appointments"
         element={
           <ProtectedRoute allowedRole="doctor">
             <DoctorAppointmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Patient protected */}
+      <Route
+        path="/patient/dashboard"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDashboard />
           </ProtectedRoute>
         }
       />
