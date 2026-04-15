@@ -20,16 +20,12 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
-<<<<<<< HEAD
-import MySchedule from "./pages/MySchedule";
-=======
 import PatientDashboard from "./pages/PatientDashboard";
 import PasswordResetReq from "./pages/PasswordRestReq";
 import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
->>>>>>> 4c4d2fbcfa863a5fa4c8797286c8c3627b33c9ab
 
 function App() {
   return (
