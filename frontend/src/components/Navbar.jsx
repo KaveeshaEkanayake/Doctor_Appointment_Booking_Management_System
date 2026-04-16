@@ -75,14 +75,14 @@ export default function Navbar() {
           ))}
           {isPatient && (
             <NavLink
-              to="/my-appointments"
+              to="patient/dashboard"
               className={({ isActive }) =>
                 `text-sm font-medium transition ${
                   isActive ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
                 }`
               }
             >
-              My Appointments
+              Dashboard
             </NavLink>
           )}
         </div>
@@ -198,15 +198,7 @@ export default function Navbar() {
 
           {isPatient && (
             <>
-              <NavLink
-                to="/my-appointments"
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `text-sm font-medium ${isActive ? "text-blue-600" : "text-gray-600"}`
-                }
-              >
-                My Appointments
-              </NavLink>
+            
               <button
                 onClick={() => { navigate("/patient/profile"); setOpen(false); }}
                 className="text-sm font-medium text-gray-600 text-left"
