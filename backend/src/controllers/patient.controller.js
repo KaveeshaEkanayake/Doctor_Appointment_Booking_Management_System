@@ -58,7 +58,7 @@ export const loginPatient = async (req, res) => {
       {
         id:    patient.id,
         email: patient.email,
-        role:  "patient",      
+        role:  "patient",
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -74,8 +74,44 @@ export const loginPatient = async (req, res) => {
         lastName:  patient.lastName,
         email:     patient.email,
         phone:     patient.phone,
-        role:      "patient",     
+        role:      "patient",
       },
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
+  }
+};
+
+export const deletePatient = async (req, res) => {
+  const patientId = req.user.id;
+
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+    });
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found.",
+      });
+    }
+
+    await prisma.appointment.deleteMany({
+      where: { patientId },
+    });
+
+    await prisma.patient.delete({
+      where: { id: patientId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Account deleted successfully.",
     });
 
   } catch (error) {
