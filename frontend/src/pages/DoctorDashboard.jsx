@@ -7,11 +7,16 @@ import { FiBell } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+
 export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [note, setNote] = useState("");
 
   const [stats, setStats] = useState({
     today: 0,
@@ -233,8 +238,14 @@ export default function DoctorDashboard() {
                       {item.notes ? (
                         <button className="text-blue-500 text-xs">View Notes</button>
                       ) : (
-                        <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-                          Add Notes
+                        <button
+                          onClick={() => {
+                            setSelectedPatient(item);
+                            setShowModal(true);
+                          }}
+                          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
+                        >
+                          + Add Notes
                         </button>
                       )}
                     </div>
@@ -271,7 +282,13 @@ export default function DoctorDashboard() {
                               View Notes
                             </button>
                           ) : (
-                            <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs">
+                            <button
+                              onClick={() => {
+                                setSelectedPatient(item);
+                                setShowModal(true);
+                              }}
+                              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
+                            >
                               + Add Notes
                             </button>
                           )}
@@ -285,6 +302,67 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6 relative">
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">
+                Add Patient Notes - {selectedPatient?.name}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* Notes Input */}
+              <div>
+                <p className="text-sm font-medium mb-2 text-gray-600">
+                  Clinical Notes
+                </p>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Enter clinical observations, diagnosis, and treatment plan..."
+                  className="w-full h-40 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              {/* Previous Notes */}
+              <div className="flex items-center justify-center border rounded-lg text-gray-400 text-sm">
+                No previous notes found
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-gray-600 hover:underline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  console.log("Saved note:", note);
+                  setShowModal(false);
+                  setNote("");
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Save Note
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DoctorLayout>
   );
 }
