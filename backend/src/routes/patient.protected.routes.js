@@ -25,7 +25,8 @@ router.put(
   updatePatientProfile
 );
 router.get("/dashboard", authenticate, authorizePatient, getPatientDashboardStats);
-// DELETE /api/patients/account
+
+// DELETE /api/patient/account
 router.delete("/account", authenticate, authorizePatient, deletePatient);
 
 export default router;
