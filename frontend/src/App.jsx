@@ -26,6 +26,7 @@ import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
+import MySchedule from "./pages/MySchedule";
 
 function App() {
   return (
@@ -103,7 +104,16 @@ function App() {
             <DoctorAppointmentsPage />
           </ProtectedRoute>
         }
+        
       />
+      <Route
+  path="/doctor/schedule"
+  element={
+    <ProtectedRoute allowedRole="doctor">
+      <MySchedule />
+    </ProtectedRoute>
+  }
+/>
 
       {/* Patient protected */}
       <Route

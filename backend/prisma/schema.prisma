@@ -41,6 +41,7 @@ model Doctor {
   updatedAt           DateTime       @default(now()) @updatedAt
   availability        Availability[]
   appointments        Appointment[]
+  blockedSlots  BlockedSlot[]
 }
 
 model Availability {
@@ -82,7 +83,17 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
-
+model BlockedSlot {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  date      DateTime
+  startTime String
+  endTime   String
+  reason    String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
 enum Status {
   PENDING
   APPROVED
