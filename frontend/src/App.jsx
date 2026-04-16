@@ -45,7 +45,7 @@ function App() {
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
-      <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+     
 
       {/* Password reset routes */}
       <Route path="/forgot-password" element={<PasswordResetReq />} />
@@ -75,14 +75,14 @@ function App() {
       />
 
       {/* Doctor protected */}
-      {/* <Route
+      <Route
         path="/doctor/dashboard"
         element={
           <ProtectedRoute allowedRole="doctor">
             <DoctorDashboard />
           </ProtectedRoute>
         }
-      /> */}
+      />
 
       <Route
         path="/doctor/profile"
