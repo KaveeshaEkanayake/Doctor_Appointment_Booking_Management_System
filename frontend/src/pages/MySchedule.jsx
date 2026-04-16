@@ -12,7 +12,7 @@ const formatHourLabel = (hour) => {
   return `${hour - 12}:00 PM`;
 };
 
-export default function MyAvailability() {
+export default function MySchedule()  {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate]       = useState(new Date());
   const [weekDates, setWeekDates]           = useState([]);

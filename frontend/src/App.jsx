@@ -107,13 +107,13 @@ function App() {
         
       />
       <Route
-  path="/doctor/schedule"
-  element={
-    <ProtectedRoute allowedRole="doctor">
-      <MySchedule />
-    </ProtectedRoute>
-  }
-/>
+        path="/doctor/schedule"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <MySchedule />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Patient protected */}
       <Route

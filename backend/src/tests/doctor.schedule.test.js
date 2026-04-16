@@ -3,8 +3,9 @@ import app from "../app.js";
 import prisma from "../lib/prisma.js";
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 
-const DOCTOR_EMAIL    = "schedule_test_doctor@gmail.com";
-const PATIENT_EMAIL   = "schedule_test_patient@gmail.com";
+const TEST_RUN_SUFFIX = `${Date.now()}`;
+const DOCTOR_EMAIL    = `schedule_test_doctor_${TEST_RUN_SUFFIX}@gmail.com`;
+const PATIENT_EMAIL   = `schedule_test_patient_${TEST_RUN_SUFFIX}@gmail.com`;
 let doctorToken;
 let doctorId;
 let patientId;

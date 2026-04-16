@@ -13,9 +13,8 @@ export const getWeeklySchedule = async (req, res) => {
   }
 
   try {
-    const start = new Date(startDate);
-    const end   = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    const start = new Date(`${startDate}T00:00:00.000Z`);
+    const end   = new Date(`${endDate}T23:59:59.999Z`);
 
     const [appointments, blockedSlots] = await Promise.all([
       prisma.appointment.findMany({
@@ -46,15 +45,15 @@ export const getWeeklySchedule = async (req, res) => {
     ]);
 
     const formattedAppointments = appointments.map((appt) => ({
-      id:          appt.id,
-      patientId:   appt.patient.id,
-      patientName: `${appt.patient.firstName} ${appt.patient.lastName}`,
-      patientPhone: appt.patient.phone,
-      date:        appt.date,
-      time:        appt.time,
-      reason:      appt.reason,
-      status:      appt.status,
-      notes:       appt.notes || null,
+      id:              appt.id,
+      patientId:       appt.patient.id,
+      patientName:     `${appt.patient.firstName} ${appt.patient.lastName}`,
+      patientPhone:    appt.patient.phone,
+      date:            appt.date,
+      time:            appt.time,
+      reason:          appt.reason,
+      status:          appt.status,
+      notes:           appt.notes || null,
       rejectionReason: appt.rejectionReason,
     }));
 
@@ -82,7 +81,7 @@ export const blockSlot = async (req, res) => {
   }
 
   try {
-    const slotDate = new Date(date);
+    const slotDate = new Date(`${date}T00:00:00.000Z`);
 
     // Check for conflicting appointments
     const conflict = await prisma.appointment.findFirst({
@@ -97,7 +96,7 @@ export const blockSlot = async (req, res) => {
     if (conflict) {
       return res.status(409).json({
         success: false,
-        message: "A confirmed appointment already exists in this slot",
+        message: "A non-cancelled appointment already exists in this slot",
       });
     }
 
