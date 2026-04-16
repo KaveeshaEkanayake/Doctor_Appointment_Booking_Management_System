@@ -53,9 +53,6 @@ function App() {
       <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
       <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
 
-      {/* Patient account */}
-      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
-
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
 
@@ -118,6 +115,14 @@ function App() {
         element={
           <ProtectedRoute allowedRole="patient">
             <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patient/acc-delete"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDeleteAccountPage />
           </ProtectedRoute>
         }
       />

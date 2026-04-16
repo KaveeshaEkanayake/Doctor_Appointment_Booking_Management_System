@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
@@ -8,7 +9,7 @@ export default function PatientProfileDisplay({ onEdit }) {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
-
+  const navigate  = useNavigate();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export default function PatientProfileDisplay({ onEdit }) {
       </div>
 
       {/* Personal Information */}
-      <div className="bg-white shadow-md rounded-lg p-10">
+      <div className="bg-white shadow-md rounded-lg p-10 mb-6">
         <div className="flex justify-between items-center mb-6 md:mb-10">
           <h3 className="text-lg md:text-xl font-bold">Personal Information</h3>
           <button onClick={onEdit} className="text-blue-600 hover:underline text-sm">
@@ -100,6 +101,20 @@ export default function PatientProfileDisplay({ onEdit }) {
             <hr className="mt-2" />
           </div>
         </div>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="bg-white shadow-md rounded-lg p-6 border border-red-200">
+        <h3 className="text-lg font-bold text-red-600 mb-2">Danger Zone</h3>
+        <p className="text-gray-500 text-sm mb-4">
+          Once you delete your account, all your data will be permanently removed and you will be logged out.
+        </p>
+        <button
+          onClick={() => navigate("/patient/acc-delete")}
+          className="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-md hover:bg-red-700 transition"
+        >
+          Delete Account
+        </button>
       </div>
     </main>
   );
