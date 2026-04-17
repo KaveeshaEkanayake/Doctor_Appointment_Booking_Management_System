@@ -19,13 +19,11 @@ export default function DoctorDashboard() {
   const [saveError, setSaveError]             = useState("");
   const [previousNotes, setPreviousNotes]     = useState([]);
   const [notesLoading, setNotesLoading]       = useState(false);
-
-  const [stats, setStats] = useState({
+  const [stats, setStats]                     = useState({
     today:    0,
     patients: 0,
     pending:  0,
   });
-
   const [appointments, setAppointments] = useState([]);
 
   const user         = JSON.parse(localStorage.getItem("user") || "{}");
@@ -343,7 +341,6 @@ export default function DoctorDashboard() {
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6 relative">
 
-            {/* Header */}
             <div className="flex justify-between items-center mb-1">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
@@ -371,7 +368,6 @@ export default function DoctorDashboard() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
               {/* Previous Notes History */}
@@ -418,12 +414,10 @@ export default function DoctorDashboard() {
               </div>
             </div>
 
-            {/* Error */}
             {saveError && (
               <p className="text-red-500 text-sm mt-2">{saveError}</p>
             )}
 
-            {/* Footer */}
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
