@@ -7,7 +7,6 @@ import { FiBell } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate]         = useState(new Date());
@@ -20,17 +19,11 @@ export default function DoctorDashboard() {
   const [saveError, setSaveError]             = useState("");
   const [previousNotes, setPreviousNotes]     = useState([]);
   const [notesLoading, setNotesLoading]       = useState(false);
-
-  const [showModal, setShowModal] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [note, setNote] = useState("");
-
-  const [stats, setStats] = useState({
+  const [stats, setStats]                     = useState({
     today:    0,
     patients: 0,
     pending:  0,
   });
-
   const [appointments, setAppointments] = useState([]);
 
   const user         = JSON.parse(localStorage.getItem("user") || "{}");
@@ -284,10 +277,7 @@ export default function DoctorDashboard() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => {
-                            setSelectedPatient(item);
-                            setShowModal(true);
-                          }}
+                          onClick={() => openNotesModal(item)}
                           className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
                         >
                           + Add Notes
@@ -329,10 +319,7 @@ export default function DoctorDashboard() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => {
-                                setSelectedPatient(item);
-                                setShowModal(true);
-                              }}
+                              onClick={() => openNotesModal(item)}
                               className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
                             >
                               + Add Notes
@@ -348,14 +335,14 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
+
+      {/* Notes Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6 relative">
 
-            {/* Header */}
             <div className="flex justify-between items-center mb-1">
               <div className="flex items-center gap-3">
-                {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
                   {selectedPatient?.name?.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
@@ -364,7 +351,6 @@ export default function DoctorDashboard() {
                     <h2 className="text-lg font-semibold">
                       Patient Notes - {selectedPatient?.name}
                     </h2>
-                    {/* Private Badge */}
                     <span className="flex items-center gap-1 text-xs border border-gray-300 text-gray-500 px-2 py-0.5 rounded-full">
                       🔒 Private
                     </span>
@@ -382,7 +368,6 @@ export default function DoctorDashboard() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
               {/* Previous Notes History */}
@@ -390,34 +375,25 @@ export default function DoctorDashboard() {
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-3">
                   Previous Notes History
                 </p>
-                {(selectedPatient?.previousNotes?.length > 0) ? (
+                {notesLoading ? (
+                  <div className="flex justify-center py-4">
+                    <AiOutlineLoading3Quarters className="animate-spin text-blue-500" />
+                  </div>
+                ) : previousNotes.length > 0 ? (
                   <div className="space-y-2">
-                    {selectedPatient.previousNotes.map((prev, i) => (
+                    {previousNotes.map((prev, i) => (
                       <div key={i} className="border rounded-lg p-3">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-xs font-medium text-gray-700">{prev.date}</span>
-                          <button className="text-blue-500 text-xs hover:underline">View</button>
                         </div>
-                        <p className="text-xs text-gray-500">{prev.summary}</p>
+                        <p className="text-xs text-gray-500 font-medium">{prev.reason}</p>
+                        <p className="text-xs text-gray-400 mt-1">{prev.summary}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  // Placeholder history shown when no real data — remove these if you have real data
-                  <div className="space-y-2">
-                    {[
-                      { date: "Aug 12, 2025", summary: "Follow-up on allergy medication effectiveness..." },
-                      { date: "May 24, 2025", summary: "Initial consultation regarding seasonal symptoms..." },
-                      { date: "Feb 10, 2025", summary: "Annual physical and lab results review..." },
-                    ].map((prev, i) => (
-                      <div key={i} className="border rounded-lg p-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-medium text-gray-700">{prev.date}</span>
-                          <button className="text-blue-500 text-xs hover:underline">View</button>
-                        </div>
-                        <p className="text-xs text-gray-500">{prev.summary}</p>
-                      </div>
-                    ))}
+                  <div className="text-center py-8 text-gray-400">
+                    <p className="text-xs">No previous notes found</p>
                   </div>
                 )}
               </div>
@@ -428,9 +404,6 @@ export default function DoctorDashboard() {
                   <p className="text-xs font-semibold text-gray-500 uppercase">
                     Current Session Notes
                   </p>
-                  <button className="text-blue-500 text-xs flex items-center gap-1 hover:underline">
-                    ✏️ Edit
-                  </button>
                 </div>
                 <textarea
                   value={note}
@@ -441,7 +414,10 @@ export default function DoctorDashboard() {
               </div>
             </div>
 
-            {/* Footer */}
+            {saveError && (
+              <p className="text-red-500 text-sm mt-2">{saveError}</p>
+            )}
+
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
@@ -450,14 +426,11 @@ export default function DoctorDashboard() {
                 Close
               </button>
               <button
-                onClick={() => {
-                  console.log("Saved note:", note);
-                  setShowModal(false);
-                  setNote("");
-                }}
-                className="bg-blue-600 text-white px-5 py-2 rounded-full font-medium"
+                onClick={handleSaveNotes}
+                disabled={saving}
+                className="bg-blue-600 text-white px-5 py-2 rounded-full font-medium disabled:opacity-50"
               >
-                Save Changes
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
