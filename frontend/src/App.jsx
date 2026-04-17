@@ -44,6 +44,8 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/doctor/schedule" element={<MySchedule />} />
+     
 
       {/* Password reset routes */}
       <Route path="/forgot-password" element={<PasswordResetReq />} />
@@ -81,6 +83,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/doctor/profile"
         element={
