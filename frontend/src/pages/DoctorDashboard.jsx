@@ -9,34 +9,40 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+<<<<<<< Updated upstream
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+=======
+  const [currentDate, setCurrentDate]         = useState(new Date());
+  const [loading, setLoading]                 = useState(true);
+  const [error, setError]                     = useState(null);
+  const [showModal, setShowModal]             = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [note, setNote]                       = useState("");
+  const [saving, setSaving]                   = useState(false);
+  const [saveError, setSaveError]             = useState("");
+  const [previousNotes, setPreviousNotes]     = useState([]);
+  const [notesLoading, setNotesLoading]       = useState(false);
+>>>>>>> Stashed changes
 
   const [stats, setStats] = useState({
-    today: 0,
+    today:    0,
     patients: 0,
-    pending: 0,
+    pending:  0,
   });
 
   const [appointments, setAppointments] = useState([]);
 
-  // Get doctor info from localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const doctorName = user.firstName
-    ? `Dr. ${user.firstName} ${user.lastName}`
-    : "Doctor";
+  const user         = JSON.parse(localStorage.getItem("user") || "{}");
+  const doctorName   = user.firstName ? `Dr. ${user.firstName} ${user.lastName}` : "Doctor";
   const profilePhoto = user.profilePhoto || null;
 
-  // Live clock
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 60000);
+    const timer = setInterval(() => setCurrentDate(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch dashboard data from backend
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -47,13 +53,8 @@ export default function DoctorDashboard() {
             "Content-Type": "application/json",
           },
         });
-
         const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          throw new Error(data.message || "Failed to load dashboard");
-        }
-
+        if (!res.ok || !data.success) throw new Error(data.message || "Failed to load dashboard");
         setStats(data.data.stats);
         setAppointments(data.data.schedule);
       } catch (err) {
@@ -63,32 +64,81 @@ export default function DoctorDashboard() {
         setLoading(false);
       }
     };
-
     fetchDashboard();
   }, []);
+
+  const fetchPatientNotes = async (patientId) => {
+    setNotesLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/api/doctor/patients/${patientId}/notes`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success) setPreviousNotes(data.notes);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setNotesLoading(false);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    if (!note.trim()) return;
+    setSaving(true);
+    setSaveError("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/api/doctor/appointments/${selectedPatient.id}/notes`,
+        {
+          method:  "PATCH",
+          headers: {
+            Authorization:  `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notes: note }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message);
+      setShowModal(false);
+      setNote("");
+      window.location.reload();
+    } catch (err) {
+      setSaveError("Failed to save notes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const formatDate = (date) => {
     return date.toLocaleDateString("en-US", {
       weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+      year:    "numeric",
+      month:   "long",
+      day:     "numeric",
     });
   };
 
   const statusStyle = (status) => {
     switch (status) {
-      case "Confirmed":
-        return "bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs";
-      case "Pending":
-        return "bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs";
-      case "Completed":
-        return "bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs";
-      case "Cancelled":
-        return "bg-red-100 text-red-500 px-2 py-1 rounded-full text-xs";
-      default:
-        return "bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs";
+      case "Confirmed": return "bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs";
+      case "Pending":   return "bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs";
+      case "Completed": return "bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs";
+      case "Cancelled": return "bg-red-100 text-red-500 px-2 py-1 rounded-full text-xs";
+      default:          return "bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs";
     }
+  };
+
+  const openNotesModal = (item) => {
+    setSelectedPatient(item);
+    setNote(item.notes || "");
+    setSaveError("");
+    setPreviousNotes([]);
+    setShowModal(true);
+    fetchPatientNotes(item.patientId);
   };
 
   return (
@@ -105,13 +155,11 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4">
-            {/* Notification */}
             <button className="relative p-2 rounded-full hover:bg-gray-100 transition">
               <FiBell className="text-xl text-gray-600" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* Profile */}
             <div
               onClick={() => navigate("/doctor/profile")}
               className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded-lg transition"
@@ -143,7 +191,7 @@ export default function DoctorDashboard() {
           </div>
         )}
 
-        {/* Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div
             onClick={() => navigate("/doctor/appointments")}
@@ -227,14 +275,25 @@ export default function DoctorDashboard() {
                     <p className="text-sm text-gray-500">{item.time}</p>
                     <p className="text-sm">{item.reason}</p>
                     <div className="flex justify-between items-center mt-2">
-                      <span className={statusStyle(item.status)}>
-                        {item.status}
-                      </span>
+                      <span className={statusStyle(item.status)}>{item.status}</span>
                       {item.notes ? (
-                        <button className="text-blue-500 text-xs">View Notes</button>
+                        <button
+                          onClick={() => openNotesModal(item)}
+                          className="text-blue-500 text-xs hover:underline"
+                        >
+                          View Notes
+                        </button>
                       ) : (
+<<<<<<< Updated upstream
                         <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
                           Add Notes
+=======
+                        <button
+                          onClick={() => openNotesModal(item)}
+                          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
+                        >
+                          + Add Notes
+>>>>>>> Stashed changes
                         </button>
                       )}
                     </div>
@@ -261,17 +320,25 @@ export default function DoctorDashboard() {
                         <td>{item.time}</td>
                         <td>{item.reason}</td>
                         <td>
-                          <span className={statusStyle(item.status)}>
-                            {item.status}
-                          </span>
+                          <span className={statusStyle(item.status)}>{item.status}</span>
                         </td>
                         <td className="text-right">
                           {item.notes ? (
-                            <button className="text-gray-500 hover:text-blue-600 hover:underline">
+                            <button
+                              onClick={() => openNotesModal(item)}
+                              className="text-gray-500 hover:text-blue-600 hover:underline"
+                            >
                               View Notes
                             </button>
                           ) : (
+<<<<<<< Updated upstream
                             <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs">
+=======
+                            <button
+                              onClick={() => openNotesModal(item)}
+                              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
+                            >
+>>>>>>> Stashed changes
                               + Add Notes
                             </button>
                           )}
@@ -285,6 +352,114 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
+<<<<<<< Updated upstream
+=======
+
+      {/* Notes Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-6 relative">
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                  {selectedPatient?.name?.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">
+                      Patient Notes - {selectedPatient?.name}
+                    </h2>
+                    <span className="flex items-center gap-1 text-xs border border-gray-300 text-gray-500 px-2 py-0.5 rounded-full">
+                      🔒 Private
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Last updated: Today, {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+
+              {/* Previous Notes History */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-3">
+                  Previous Notes History
+                </p>
+                {notesLoading ? (
+                  <div className="flex justify-center py-4">
+                    <AiOutlineLoading3Quarters className="animate-spin text-blue-500" />
+                  </div>
+                ) : previousNotes.length > 0 ? (
+                  <div className="space-y-2">
+                    {previousNotes.map((prev, i) => (
+                      <div key={i} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-medium text-gray-700">{prev.date}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 font-medium">{prev.reason}</p>
+                        <p className="text-xs text-gray-400 mt-1">{prev.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <p className="text-xs">No previous notes found</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Current Session Notes */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase">
+                    Current Session Notes
+                  </p>
+                </div>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Enter clinical observations, diagnosis, and treatment plan..."
+                  className="w-full h-56 border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Error */}
+            {saveError && (
+              <p className="text-red-500 text-sm mt-2">{saveError}</p>
+            )}
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-gray-600 hover:underline"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleSaveNotes}
+                disabled={saving}
+                className="bg-blue-600 text-white px-5 py-2 rounded-full font-medium disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+>>>>>>> Stashed changes
     </DoctorLayout>
   );
 }

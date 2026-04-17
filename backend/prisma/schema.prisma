@@ -65,6 +65,7 @@ model Appointment {
   date            DateTime
   time            String
   reason          String?
+  notes           String?           // ← add this line
   status          AppointmentStatus @default(PENDING)
   rejectionReason String?
   reminderSent    Boolean           @default(false)
