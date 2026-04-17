@@ -25,6 +25,7 @@ export const getDoctorAppointments = async (req, res) => {
       date:            appt.date,
       time:            appt.time,
       reason:          appt.reason,
+      notes:           appt.notes || null,
       status:          appt.status,
       rejectionReason: appt.rejectionReason,
     }));
@@ -41,7 +42,6 @@ export const updateAppointmentStatus = async (req, res) => {
   const { id }                      = req.params;
   const { status, rejectionReason } = req.body;
 
-  // Validate ID
   const parsedId = Number(id);
   if (!Number.isInteger(parsedId) || parsedId <= 0) {
     return res.status(400).json({
@@ -96,6 +96,98 @@ export const updateAppointmentStatus = async (req, res) => {
       message:     `Appointment ${status === "CONFIRMED" ? "confirmed" : "rejected"} successfully`,
       appointment: updated,
     });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// PATCH /api/doctor/appointments/:id/notes
+export const addAppointmentNotes = async (req, res) => {
+  const { id }    = req.params;
+  const { notes } = req.body;
+  const doctorId  = req.user.id;
+
+  const parsedId = Number(id);
+  if (!Number.isInteger(parsedId) || parsedId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid appointment ID",
+    });
+  }
+
+  if (!notes?.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: "Notes cannot be empty",
+    });
+  }
+
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: parsedId, doctorId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: parsedId },
+      data:  { notes: notes.trim() },
+    });
+
+    return res.status(200).json({
+      success:     true,
+      message:     "Notes saved successfully",
+      appointment: updated,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// GET /api/doctor/patients/:patientId/notes
+export const getPatientNotes = async (req, res) => {
+  const doctorId  = req.user.id;
+  const patientId = Number(req.params.patientId);
+
+  if (!Number.isInteger(patientId) || patientId <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid patient ID" });
+  }
+
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        doctorId,
+        patientId,
+        notes: { not: null },
+      },
+      orderBy: { date: "desc" },
+      select: {
+        id:     true,
+        date:   true,
+        time:   true,
+        reason: true,
+        notes:  true,
+      },
+    });
+
+    const notes = appointments.map((apt) => ({
+      id:      apt.id,
+      date:    new Date(apt.date).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric"
+      }),
+      time:    apt.time,
+      reason:  apt.reason || "—",
+      summary: apt.notes,
+    }));
+
+    return res.status(200).json({ success: true, notes });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
