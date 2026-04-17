@@ -9,11 +9,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
-<<<<<<< Updated upstream
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-=======
   const [currentDate, setCurrentDate]         = useState(new Date());
   const [loading, setLoading]                 = useState(true);
   const [error, setError]                     = useState(null);
@@ -24,7 +19,6 @@ export default function DoctorDashboard() {
   const [saveError, setSaveError]             = useState("");
   const [previousNotes, setPreviousNotes]     = useState([]);
   const [notesLoading, setNotesLoading]       = useState(false);
->>>>>>> Stashed changes
 
   const [stats, setStats] = useState({
     today:    0,
@@ -284,16 +278,11 @@ export default function DoctorDashboard() {
                           View Notes
                         </button>
                       ) : (
-<<<<<<< Updated upstream
-                        <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-                          Add Notes
-=======
                         <button
                           onClick={() => openNotesModal(item)}
                           className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
                         >
                           + Add Notes
->>>>>>> Stashed changes
                         </button>
                       )}
                     </div>
@@ -331,14 +320,10 @@ export default function DoctorDashboard() {
                               View Notes
                             </button>
                           ) : (
-<<<<<<< Updated upstream
-                            <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs">
-=======
                             <button
                               onClick={() => openNotesModal(item)}
                               className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs"
                             >
->>>>>>> Stashed changes
                               + Add Notes
                             </button>
                           )}
@@ -352,8 +337,6 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
-<<<<<<< Updated upstream
-=======
 
       {/* Notes Modal */}
       {showModal && (
@@ -459,7 +442,6 @@ export default function DoctorDashboard() {
           </div>
         </div>
       )}
->>>>>>> Stashed changes
     </DoctorLayout>
   );
 }
