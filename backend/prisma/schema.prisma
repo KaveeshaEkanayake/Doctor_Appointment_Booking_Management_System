@@ -15,11 +15,12 @@ model Patient {
   phone        String
   address      String?
   dateOfBirth  DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @default(now()) @updatedAt
   appointments Appointment[]
 }
-
 model Doctor {
   id                  Int            @id @default(autoincrement())
   firstName           String
@@ -40,6 +41,7 @@ model Doctor {
   updatedAt           DateTime       @default(now()) @updatedAt
   availability        Availability[]
   appointments        Appointment[]
+  blockedSlots  BlockedSlot[]
 }
 
 model Availability {
@@ -81,7 +83,20 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
+model BlockedSlot {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  date      DateTime
+  startTime String
+  endTime   String
+  reason    String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
+  @@unique([doctorId, date, startTime])
+  @@index([doctorId, date])
+}
 enum Status {
   PENDING
   APPROVED

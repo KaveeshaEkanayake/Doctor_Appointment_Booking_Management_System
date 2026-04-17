@@ -43,12 +43,15 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/doctor/schedule" element={<MySchedule />} />
+     
+
+      {/* Password reset routes */}
       <Route path="/forgot-password" element={<PasswordResetReq />} />
       <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
       <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
       <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
       <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
-
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -80,6 +83,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/doctor/profile"
         element={
@@ -103,6 +107,15 @@ function App() {
             <DoctorAppointmentsPage />
           </ProtectedRoute>
         }
+        
+      />
+      <Route
+        path="/doctor/schedule"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <MySchedule />
+          </ProtectedRoute>
+        }
       />
 
       {/* Patient protected */}
@@ -111,6 +124,14 @@ function App() {
         element={
           <ProtectedRoute allowedRole="patient">
             <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patient/acc-delete"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDeleteAccountPage />
           </ProtectedRoute>
         }
       />
