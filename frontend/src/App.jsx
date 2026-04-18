@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
+import ViewAppointmentHistory from "./pages/ViewAppointmentHistory";
 
 function App() {
   return (
@@ -36,7 +37,8 @@ function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
-      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />      
+      <Route path="/history" element={<ViewAppointmentHistory />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -59,6 +61,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
 
       {/* Doctor protected */}
       <Route
