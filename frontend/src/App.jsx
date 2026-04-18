@@ -27,6 +27,7 @@ import PasswordResetPage from "./pages/PasswordResetPage";
 import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
 import MySchedule from "./pages/MySchedule";
+import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
 
 function App() {
   return (
@@ -70,6 +71,14 @@ function App() {
         element={
           <ProtectedRoute allowedRole="admin">
             <AdminDoctorsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/patients"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminPatientManagementPage />
           </ProtectedRoute>
         }
       />
