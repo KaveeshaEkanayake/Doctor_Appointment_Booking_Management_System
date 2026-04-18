@@ -193,3 +193,50 @@ export const getPatientNotes = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+// PATCH /api/doctor/appointments/:id/complete
+export const completeAppointment = async (req, res) => {
+  const doctorId = req.user.id;
+  const { id }   = req.params;
+
+  const parsedId = Number(id);
+  if (!Number.isInteger(parsedId) || parsedId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid appointment ID",
+    });
+  }
+
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: parsedId, doctorId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    if (!["CONFIRMED", "PAID"].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only confirmed or paid appointments can be marked as completed",
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: parsedId },
+      data:  { status: "COMPLETED" },
+    });
+
+    return res.status(200).json({
+      success:     true,
+      message:     "Appointment marked as completed",
+      appointment: updated,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

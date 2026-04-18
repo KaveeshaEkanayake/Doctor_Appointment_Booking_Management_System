@@ -21,7 +21,6 @@ export const createAppointment = async (req, res) => {
     const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
     const endOfDay   = new Date(`${dateStr}T23:59:59.999Z`);
 
-    // Check slot not already booked — exclude CANCELLED
     const existing = await prisma.appointment.findFirst({
       where: {
         doctorId: parseInt(doctorId),
@@ -38,7 +37,6 @@ export const createAppointment = async (req, res) => {
       });
     }
 
-    // Check slot is not blocked by doctor
     const blockedSlot = await prisma.blockedSlot.findFirst({
       where: {
         doctorId: parseInt(doctorId),
@@ -101,10 +99,11 @@ export const getMyAppointments = async (req, res) => {
       include: {
         doctor: {
           select: {
-            firstName:      true,
-            lastName:       true,
-            specialisation: true,
-            profilePhoto:   true,
+            firstName:       true,
+            lastName:        true,
+            specialisation:  true,
+            profilePhoto:    true,
+            consultationFee: true,
           },
         },
       },
@@ -117,6 +116,7 @@ export const getMyAppointments = async (req, res) => {
       doctorName:      `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
       specialisation:  appt.doctor.specialisation,
       profilePhoto:    appt.doctor.profilePhoto,
+      consultationFee: appt.doctor.consultationFee || 0,
       date:            appt.date,
       time:            appt.time,
       reason:          appt.reason,
@@ -156,7 +156,6 @@ export const getBookedSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid date value" });
     }
 
-    // Get booked appointments
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId: doctorIdNum,
@@ -166,7 +165,6 @@ export const getBookedSlots = async (req, res) => {
       select: { time: true },
     });
 
-    // Get blocked slots
     const blocked = await prisma.blockedSlot.findMany({
       where: {
         doctorId: doctorIdNum,
@@ -175,7 +173,6 @@ export const getBookedSlots = async (req, res) => {
       select: { startTime: true, endTime: true },
     });
 
-    // Convert blocked slots to time strings matching appointment format
     const blockedTimes = [];
     blocked.forEach((b) => {
       const startHour = parseInt(b.startTime.split(":")[0]);
@@ -265,7 +262,6 @@ export const rescheduleAppointment = async (req, res) => {
       });
     }
 
-    // Check slot is not blocked by doctor
     const blockedSlot = await prisma.blockedSlot.findFirst({
       where: {
         doctorId: appointment.doctorId,
@@ -346,6 +342,60 @@ export const cancelAppointment = async (req, res) => {
       appointment: updated,
     });
 
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+// GET /api/appointments/outstanding
+export const getOutstandingBalance = async (req, res) => {
+  const patientId = req.user.id;
+
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get all confirmed/completed appointments that are not paid
+    const unpaidAppointments = await prisma.appointment.findMany({
+      where: {
+        patientId,
+        status: { in: ["CONFIRMED", "COMPLETED", "MISSED"] },
+        payment: null,
+      },
+      include: {
+        doctor: {
+          select: {
+            firstName:       true,
+            lastName:        true,
+            specialisation:  true,
+            consultationFee: true,
+          },
+        },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    const SERVICE_FEE = 500;
+
+    const formatted = unpaidAppointments.map((appt) => ({
+      id:              appt.id,
+      doctorName:      `Dr. ${appt.doctor.firstName} ${appt.doctor.lastName}`,
+      specialisation:  appt.doctor.specialisation,
+      consultationFee: appt.doctor.consultationFee || 0,
+      totalAmount:     (appt.doctor.consultationFee || 0) + SERVICE_FEE,
+      date:            appt.date,
+      time:            appt.time,
+      status:          appt.status,
+      daysUntilDue:    Math.max(0, 7 - Math.floor((today - new Date(appt.date)) / (1000 * 60 * 60 * 24))),
+    }));
+
+    const totalOutstanding = formatted.reduce((sum, appt) => sum + appt.totalAmount, 0);
+
+    return res.status(200).json({
+      success:      true,
+      totalOutstanding,
+      unpaidAppointments: formatted,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Internal server error" });
