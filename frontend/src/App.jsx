@@ -31,6 +31,7 @@ import MySchedule from "./pages/MySchedule";
 import PaymentPage from "./pages/PaymentPage";
 import BillingPage from "./pages/BillingPage";
 import InvoicePage from "./pages/InvoicePage";
+import SymptomChecker from "./pages/SymptomChecker";
 
 
 import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
@@ -56,6 +57,7 @@ function App() {
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
       <Route path="/payment-history" element={<PaymentHistory />} />
+      <Route path="/symptom-checker" element={<SymptomChecker />} />
      
 
       {/* Password reset routes */}
