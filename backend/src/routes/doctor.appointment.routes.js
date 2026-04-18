@@ -6,8 +6,10 @@ import {
   updateAppointmentStatus,
   addAppointmentNotes,
   getPatientNotes,
+  completeAppointment,
 } from "../controllers/doctor.appointment.controller.js";
 import validate from "../middlewares/validate.middleware.js";
+
 
 const router = Router();
 
@@ -49,5 +51,12 @@ router.get(
   authenticate,
   authorizeDoctor,
   getPatientNotes
+);
+// PATCH /api/doctor/appointments/:id/complete
+router.patch(
+  "/appointments/:id/complete",
+  authenticate,
+  authorizeDoctor,
+  completeAppointment
 );
 export default router;

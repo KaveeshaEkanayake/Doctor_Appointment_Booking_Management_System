@@ -28,6 +28,11 @@ import PasswordResetPage from "./pages/PasswordResetPage";
 import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
 import MySchedule from "./pages/MySchedule";
+import PaymentPage from "./pages/PaymentPage";
+import BillingPage from "./pages/BillingPage";
+import InvoicePage from "./pages/InvoicePage";
+
+
 import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
 import PaymentHistory from "./pages/PaymentHistoryPage";
 
@@ -150,6 +155,31 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+  path="/patient/payment/:appointmentId"
+  element={
+    <ProtectedRoute allowedRole="patient">
+      <PaymentPage />
+    </ProtectedRoute>
+  }
+/>
+      <Route
+        path="/patient/billing"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <BillingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patient/billing/invoice/:paymentId"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <InvoicePage />
+          </ProtectedRoute>
+        }
+/>
     </Routes>
   );
 }

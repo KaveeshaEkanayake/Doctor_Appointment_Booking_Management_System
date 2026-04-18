@@ -1,11 +1,17 @@
-import request from "supertest";
-import app from "../app.js";
-import prisma from "../lib/prisma.js";
-import { describe, it, expect, afterAll, beforeAll } from "@jest/globals";
+import { jest } from "@jest/globals";
+
+// Mock email BEFORE importing app
+jest.unstable_mockModule("../lib/email.js", () => ({
+  sendEmail: jest.fn().mockResolvedValue(true),
+}));
+
+const { default: request } = await import("supertest");
+const { default: app }     = await import("../app.js");
+const { default: prisma }  = await import("../lib/prisma.js");
 
 describe("Patient Password Reset", () => {
   const testEmail = "password_reset_test@gmail.com";
-  let resetToken = null;
+  let resetToken  = null;
 
   beforeAll(async () => {
     await request(app)
@@ -20,13 +26,10 @@ describe("Patient Password Reset", () => {
   });
 
   afterAll(async () => {
-    await prisma.patient.deleteMany({
-      where: { email: testEmail }
-    });
+    await prisma.patient.deleteMany({ where: { email: testEmail } });
     await prisma.$disconnect();
   });
 
-  // ── forgot-password ──────────────────────────────────────────
   describe("POST /api/auth/forgot-password", () => {
 
     it("should return 200 for registered email", async () => {
@@ -59,7 +62,6 @@ describe("Patient Password Reset", () => {
       expect(patient.resetToken).toBeDefined();
       expect(patient.resetTokenExpiry).toBeDefined();
 
-      // Save token for reset tests
       resetToken = patient.resetToken;
     });
 
@@ -68,19 +70,17 @@ describe("Patient Password Reset", () => {
         where: { email: testEmail }
       });
 
-      const now = new Date();
-      const expiry = new Date(patient.resetTokenExpiry);
-      const diffMs = expiry - now;
+      const now      = new Date();
+      const expiry   = new Date(patient.resetTokenExpiry);
+      const diffMs   = expiry - now;
       const diffMins = diffMs / 1000 / 60;
 
-      // Should be close to 60 minutes
       expect(diffMins).toBeGreaterThan(58);
       expect(diffMins).toBeLessThanOrEqual(60);
     });
 
   });
 
-  // ── reset-password ───────────────────────────────────────────
   describe("POST /api/auth/reset-password", () => {
 
     it("should return 400 for missing token", async () => {
@@ -120,10 +120,9 @@ describe("Patient Password Reset", () => {
     });
 
     it("should return 400 for expired token", async () => {
-      // Manually expire the token
       await prisma.patient.update({
         where: { email: testEmail },
-        data: { resetTokenExpiry: new Date(Date.now() - 1000) }
+        data:  { resetTokenExpiry: new Date(Date.now() - 1000) }
       });
 
       const res = await request(app)
@@ -133,10 +132,9 @@ describe("Patient Password Reset", () => {
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
 
-      // Restore valid token for next test
       await prisma.patient.update({
         where: { email: testEmail },
-        data: { resetTokenExpiry: new Date(Date.now() + 3600000) }
+        data:  { resetTokenExpiry: new Date(Date.now() + 3600000) }
       });
     });
 

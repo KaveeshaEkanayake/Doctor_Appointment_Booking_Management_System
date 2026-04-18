@@ -13,6 +13,7 @@ export default function DoctorAppointmentsPage() {
   const [rejectModal,  setRejectModal]  = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [submitting,   setSubmitting]   = useState(false);
+  const [completing,   setCompleting]   = useState(null);
   const [error,        setError]        = useState("");
 
   const token = localStorage.getItem("token");
@@ -80,24 +81,142 @@ export default function DoctorAppointmentsPage() {
     }
   };
 
+  const handleComplete = async (appointmentId) => {
+    setCompleting(appointmentId);
+    try {
+      await axios.patch(
+        `${API}/api/doctor/appointments/${appointmentId}/complete`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAppointments(prev =>
+        prev.map(a => a.id === appointmentId ? { ...a, status: "COMPLETED" } : a)
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to mark as completed");
+    } finally {
+      setCompleting(null);
+    }
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const isToday = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === today.getTime();
+  };
+
+  const isPastOrToday = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d <= today;
+  };
+
   const pending = appointments
     .filter(a => a.status === "PENDING")
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const confirmed = appointments
-    .filter(a => a.status === "CONFIRMED")
+    .filter(a => ["CONFIRMED", "PAID"].includes(a.status))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const completed = appointments
+    .filter(a => a.status === "COMPLETED")
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const getTabCount = (tab) => {
+    if (tab === "pending")   return pending.length;
+    if (tab === "confirmed") return confirmed.length;
+    if (tab === "completed") return completed.length;
+    return 0;
+  };
+
+  const renderAppointmentCard = (appt, showComplete = false) => (
+    <div
+      key={appt.id}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+    >
+      <div className="flex items-center gap-4">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold border flex-shrink-0 ${
+          appt.status === "COMPLETED" ? "bg-blue-50 text-blue-400 border-blue-100" :
+          appt.status === "CONFIRMED" || appt.status === "PAID" ? "bg-green-50 text-green-400 border-green-100" :
+          "bg-gray-50 text-gray-400 border-gray-100"
+        }`}>
+          {appt.patientName?.[0]}
+        </div>
+        <div>
+          <p className="font-semibold text-gray-800">{appt.patientName}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <FiCalendar className="text-gray-400" />
+              {new Date(appt.date).toLocaleDateString("en-US", {
+                month: "short", day: "numeric", year: "numeric"
+              })}
+              {isToday(appt.date) && (
+                <span className="ml-1 bg-blue-100 text-blue-600 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                  Today
+                </span>
+              )}
+            </span>
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <FiClock className="text-gray-400" />
+              {appt.time}
+            </span>
+          </div>
+          {appt.reason && (
+            <p className="text-xs text-gray-400 mt-1">Reason: {appt.reason}</p>
+          )}
+          {appt.notes && (
+            <p className="text-xs text-blue-400 mt-1 italic">Notes: {appt.notes}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Payment badge */}
+        {appt.status === "PAID" && (
+          <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+            Paid
+          </span>
+        )}
+        {appt.status === "CONFIRMED" && (
+          <span className="bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1 rounded-full">
+            Unpaid
+          </span>
+        )}
+        {appt.status === "COMPLETED" && (
+          <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+            Completed
+          </span>
+        )}
+
+        {/* Mark as completed button — only for today or past appointments */}
+        {showComplete && isPastOrToday(appt.date) && (
+          <button
+            onClick={() => handleComplete(appt.id)}
+            disabled={completing === appt.id}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2"
+          >
+            {completing === appt.id && (
+              <AiOutlineLoading3Quarters className="animate-spin text-sm" />
+            )}
+            Mark as Completed
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <DoctorLayout>
       <div className="p-6 md:p-8">
 
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <p className="text-sm text-gray-500">
-              Hi, Dr.{user.firstName ?? "Doctor"}
-            </p>
+            <p className="text-sm text-gray-500">Hi, Dr.{user.firstName ?? "Doctor"}</p>
             <h1 className="text-2xl font-bold text-gray-800">My Appointments</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -118,36 +237,31 @@ export default function DoctorAppointmentsPage() {
           </div>
         </div>
 
-        {/* ── Tabs ── */}
+        {/* Tabs */}
         <div className="flex items-center gap-6 border-b border-gray-200 mb-6">
-          <button
-            onClick={() => setActiveTab("pending")}
-            className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-              activeTab === "pending"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Pending Requests
-            {pending.length > 0 && (
-              <span className="bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {pending.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("confirmed")}
-            className={`pb-3 text-sm font-semibold border-b-2 transition ${
-              activeTab === "confirmed"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Confirmed Appointments
-          </button>
+          {["pending", "confirmed", "completed"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition capitalize ${
+                activeTab === tab
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab === "pending" ? "Pending Requests" : tab === "confirmed" ? "Confirmed" : "Completed"}
+              {getTabCount(tab) > 0 && (
+                <span className={`text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ${
+                  tab === "pending" ? "bg-blue-600" : tab === "confirmed" ? "bg-green-600" : "bg-gray-400"
+                }`}>
+                  {getTabCount(tab)}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* ── Content ── */}
+        {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-24 text-gray-400 gap-2">
             <AiOutlineLoading3Quarters className="animate-spin text-xl" />
@@ -188,13 +302,10 @@ export default function DoctorAppointmentsPage() {
                         </span>
                       </div>
                       {appt.reason && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          Reason: {appt.reason}
-                        </p>
+                        <p className="text-xs text-gray-400 mt-1">Reason: {appt.reason}</p>
                       )}
                     </div>
                   </div>
-
                   <div className="flex gap-3 flex-shrink-0">
                     <button
                       onClick={() => handleAccept(appt.id)}
@@ -213,7 +324,7 @@ export default function DoctorAppointmentsPage() {
               ))}
             </div>
           )
-        ) : (
+        ) : activeTab === "confirmed" ? (
           confirmed.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <p className="text-5xl mb-4">✅</p>
@@ -222,51 +333,28 @@ export default function DoctorAppointmentsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {confirmed.map((appt) => (
-                <div
-                  key={appt.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-xl font-bold text-green-400 border border-green-100 flex-shrink-0">
-                      {appt.patientName?.[0]}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-800">{appt.patientName}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
-                          <FiCalendar className="text-gray-400" />
-                          {new Date(appt.date).toLocaleDateString("en-US", {
-                            month: "short", day: "numeric", year: "numeric"
-                          })}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
-                          <FiClock className="text-gray-400" />
-                          {appt.time}
-                        </span>
-                      </div>
-                      {appt.reason && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          Reason: {appt.reason}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    Confirmed
-                  </span>
-                </div>
-              ))}
+              {confirmed.map((appt) => renderAppointmentCard(appt, true))}
+            </div>
+          )
+        ) : (
+          completed.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <p className="text-5xl mb-4">🏁</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-1">No Completed Appointments</h3>
+              <p className="text-gray-400 text-sm">No appointments have been completed yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {completed.map((appt) => renderAppointmentCard(appt, false))}
             </div>
           )
         )}
       </div>
 
-      {/* ── Reject Modal ── */}
+      {/* Reject Modal */}
       {rejectModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
@@ -274,20 +362,15 @@ export default function DoctorAppointmentsPage() {
                 </div>
                 <h3 className="text-base font-bold text-gray-800">Reject Appointment</h3>
               </div>
-              <button
-                onClick={() => setRejectModal(null)}
-                className="text-gray-400 hover:text-gray-600 transition"
-              >
+              <button onClick={() => setRejectModal(null)} className="text-gray-400 hover:text-gray-600 transition">
                 <FiX className="text-xl" />
               </button>
             </div>
 
             <div className="px-6 py-5">
               <p className="text-sm text-gray-500 mb-4">
-                You are about to decline this appointment request. Please provide a clear reason
-                for the patient to help them understand why this slot cannot be filled.
+                You are about to decline this appointment request. Please provide a clear reason for the patient.
               </p>
-
               <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3 mb-5 border border-gray-100">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">
                   {rejectModal.patientName?.[0]}
@@ -297,35 +380,23 @@ export default function DoctorAppointmentsPage() {
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="flex items-center gap-1 text-xs text-gray-400">
                       <FiCalendar className="text-xs" />
-                      {new Date(rejectModal.date).toLocaleDateString("en-US", {
-                        month: "short", day: "numeric", year: "numeric"
-                      })}
+                      {new Date(rejectModal.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-gray-400">
                       <FiClock className="text-xs" />
                       {rejectModal.time}
                     </span>
                   </div>
-                  {rejectModal.reason && (
-                    <p className="text-xs text-gray-400 italic mt-0.5">
-                      "{rejectModal.reason}"
-                    </p>
-                  )}
                 </div>
               </div>
-
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Reason for rejection
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Reason for rejection</label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="e.g. Doctor unavailable during this slot, please reschedule for the following day."
+                placeholder="e.g. Doctor unavailable during this slot, please reschedule."
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 h-28 resize-none"
               />
-              <p className="text-xs text-gray-400 mt-2">
-                NOTE: This message will be sent directly to the patient's dashboard.
-              </p>
+              <p className="text-xs text-gray-400 mt-2">This message will be sent to the patient's dashboard.</p>
             </div>
 
             <div className="flex gap-3 px-6 pb-6">

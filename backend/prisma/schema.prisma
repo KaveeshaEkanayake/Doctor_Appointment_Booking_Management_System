@@ -20,6 +20,7 @@ model Patient {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @default(now()) @updatedAt
   appointments Appointment[]
+  payments Payment[]
 }
 model Doctor {
   id                  Int            @id @default(autoincrement())
@@ -73,6 +74,7 @@ model Appointment {
   updatedAt       DateTime          @default(now()) @updatedAt
   patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  payment  Payment?
 }
 
 model Admin {
@@ -98,6 +100,19 @@ model BlockedSlot {
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date])
 }
+model Payment {
+  id            Int      @id @default(autoincrement())
+  appointmentId Int      @unique
+  patientId     Int
+  amount        Float
+  cardName      String
+  cardLast4     String
+  status        String   @default("SUCCESS")
+  paidAt        DateTime @default(now())
+  createdAt     DateTime @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
 enum Status {
   PENDING
   APPROVED
@@ -117,6 +132,7 @@ enum AppointmentStatus {
   CANCELLED
   COMPLETED
   MISSED
+  PAID
 }
 
 enum Day {
