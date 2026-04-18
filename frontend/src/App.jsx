@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
+import ViewAppointmentHistory from "./pages/ViewAppointmentHistory";
 import PatientDashboard from "./pages/PatientDashboard";
 import PasswordResetReq from "./pages/PasswordRestReq";
 import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
@@ -44,6 +45,8 @@ function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
+      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />      
+      <Route path="/history" element={<ViewAppointmentHistory />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
      
@@ -82,6 +85,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
 
       {/* Doctor protected */}
       <Route
