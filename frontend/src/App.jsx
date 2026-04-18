@@ -21,6 +21,14 @@ import AppointmentReviewPage from "./pages/AppointmentReviewPage";
 import AppointmentConfirmationPage from "./pages/AppointmentConfirmationPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 import ViewAppointmentHistory from "./pages/ViewAppointmentHistory";
+import PatientDashboard from "./pages/PatientDashboard";
+import PasswordResetReq from "./pages/PasswordRestReq";
+import PasswordResetLinkSent from "./pages/PasswordResetLinkSent";
+import PasswordResetPage from "./pages/PasswordResetPage";
+import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
+import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
+import MySchedule from "./pages/MySchedule";
+import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
 
 function App() {
   return (
@@ -39,6 +47,15 @@ function App() {
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />      
       <Route path="/history" element={<ViewAppointmentHistory />} />
+      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
+      <Route path="/doctor/schedule" element={<MySchedule />} />
+     
+
+      {/* Password reset routes */}
+      <Route path="/forgot-password" element={<PasswordResetReq />} />
+      <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
+      <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
+      <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -52,12 +69,19 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/admin/doctors"
         element={
           <ProtectedRoute allowedRole="admin">
             <AdminDoctorsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/patients"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminPatientManagementPage />
           </ProtectedRoute>
         }
       />
@@ -72,7 +96,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-    
+
       <Route
         path="/doctor/profile"
         element={
@@ -88,13 +112,39 @@ function App() {
             <DoctorAvailabilityPage />
           </ProtectedRoute>
         }
-
       />
       <Route
         path="/doctor/appointments"
         element={
           <ProtectedRoute allowedRole="doctor">
             <DoctorAppointmentsPage />
+          </ProtectedRoute>
+        }
+        
+      />
+      <Route
+        path="/doctor/schedule"
+        element={
+          <ProtectedRoute allowedRole="doctor">
+            <MySchedule />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Patient protected */}
+      <Route
+        path="/patient/dashboard"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patient/acc-delete"
+        element={
+          <ProtectedRoute allowedRole="patient">
+            <PatientDeleteAccountPage />
           </ProtectedRoute>
         }
       />
