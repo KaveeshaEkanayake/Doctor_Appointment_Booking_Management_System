@@ -293,7 +293,7 @@ describe('MyAppointments', () => {
     axios.get.mockResolvedValueOnce({ data: { success: true, appointments: [] } })
     renderPage()
     await waitFor(() => {
-      expect(screen.getByText('No Appointments Scheduled')).toBeDefined()
+      expect(screen.getByText('No Appointments')).toBeDefined()
     })
   })
 
