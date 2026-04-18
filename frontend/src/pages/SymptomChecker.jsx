@@ -6,8 +6,7 @@ import Footer              from "../components/Footer";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FiSearch } from "react-icons/fi";
 
-const API      = import.meta.env.VITE_API_URL;
-const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const API = import.meta.env.VITE_API_URL;
 
 const COMMON_SYMPTOMS = [
   "Fever", "Dry Cough", "Fatigue", "Sore Throat", "Muscle Pain",
@@ -60,6 +59,20 @@ const urgencyConfig = {
   "Emergency": { color: "bg-red-100 text-red-700 border-red-200",          icon: "🔴", label: "Emergency"      },
 };
 
+// Shared disclaimer component — avoids duplication
+const PrivacyDisclaimer = () => (
+  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
+    <span className="text-blue-500 mt-0.5">🛡️</span>
+    <div>
+      <p className="text-xs font-semibold text-blue-600 mb-1">Confidential & Secure</p>
+      <p className="text-xs text-blue-500">
+        Your health information is processed anonymously. Our AI analyzes your symptoms
+        to suggest the most appropriate specialists. This is not a medical diagnosis.
+      </p>
+    </div>
+  </div>
+);
+
 export default function SymptomChecker() {
   const navigate = useNavigate();
 
@@ -72,11 +85,13 @@ export default function SymptomChecker() {
   const [doctors, setDoctors]         = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
 
+  // Fix: normalize case to prevent duplicate "Fever" and "fever"
   const addSymptom = (sym) => {
-    const trimmed = sym.trim();
+    const trimmed    = sym.trim();
     if (!trimmed) return;
-    if (!symptoms.includes(trimmed)) {
-      setSymptoms((prev) => [...prev, trimmed]);
+    const normalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+    if (!symptoms.map((s) => s.toLowerCase()).includes(normalized.toLowerCase())) {
+      setSymptoms((prev) => [...prev, normalized]);
     }
     setInputValue("");
   };
@@ -95,14 +110,14 @@ export default function SymptomChecker() {
     }
   };
 
+  // Fix: server-side filtering by specialisation
   const fetchDoctors = async (specialisation) => {
     setDoctorsLoading(true);
     try {
-      const { data } = await axios.get(`${API}/api/doctors`);
-      const matched = (data.doctors || []).filter(
-        (doc) => doc.specialisation?.toLowerCase() === specialisation?.toLowerCase()
-      );
-      setDoctors(matched);
+      const { data } = await axios.get(`${API}/api/doctors`, {
+        params: { specialisation },
+      });
+      setDoctors(data.doctors || []);
     } catch {
       setDoctors([]);
     } finally {
@@ -116,59 +131,21 @@ export default function SymptomChecker() {
       return;
     }
     setError("");
-    setStep(2);
     setLoading(true);
-
-    const prompt = `A patient has the following symptoms: ${symptoms.join(", ")}. Based on these symptoms, provide a medical analysis as a JSON object.`;
+    setStep(2);
 
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method:  "POST",
-        headers: {
-          "Content-Type":  "application/json",
-          "Authorization": `Bearer ${GROQ_KEY}`,
-        },
-        body: JSON.stringify({
-          model:    "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role:    "system",
-              content: `You are a medical AI assistant. Always respond with valid JSON only. No markdown, no backticks, no explanation. Use exactly this structure:
-{
-  "specialisation": "one of: General Surgery, Cardiology, Dermatology, Neurology, Orthopedics, Pediatrics, Psychiatry, Ophthalmology, ENT, Gynecology, Urology, Oncology, Radiology, Anesthesiology, General Practice",
-  "confidence": "87%",
-  "urgency": "one of: Low, Medium, High, Emergency",
-  "possibleConditions": ["condition1", "condition2", "condition3"],
-  "whatToExpect": "brief sentence about what the doctor will do",
-  "dos": ["do1", "do2", "do3"],
-  "donts": ["dont1", "dont2", "dont3"]
-}`,
-            },
-            {
-              role:    "user",
-              content: prompt,
-            },
-          ],
-          temperature:     0.2,
-          max_tokens:      500,
-          response_format: { type: "json_object" },
-        }),
-      });
+      // Fix: API key moved to backend — no longer exposed client-side
+      const res = await axios.post(
+        `${API}/api/symptom-checker`,
+        { symptoms },
+      );
 
-      const data = await res.json();
-      console.log("Groq response:", data);
-
-      if (!res.ok) {
-        console.error("Groq error:", data);
-        throw new Error(data.error?.message || "Groq API error");
+      if (!res.data.success) {
+        throw new Error(res.data.message || "AI analysis failed");
       }
 
-      const content = data.choices?.[0]?.message?.content;
-      console.log("Content:", content);
-
-      if (!content) throw new Error("Empty response from AI");
-
-      const parsed = JSON.parse(content);
+      const parsed = res.data.analysis;
 
       if (!SPECIALISATIONS.includes(parsed.specialisation)) {
         parsed.specialisation = "General Practice";
@@ -179,8 +156,7 @@ export default function SymptomChecker() {
       await fetchDoctors(parsed.specialisation);
 
     } catch (err) {
-      console.error("Analysis error:", err);
-      setError("AI analysis failed. Please try again.");
+      setError(err.response?.data?.message || "AI analysis failed. Please try again.");
       setStep(1);
     } finally {
       setLoading(false);
@@ -258,8 +234,11 @@ export default function SymptomChecker() {
                     className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 h-7"
                   >
                     {sym}
+                    {/* Fix: added aria-label for accessibility */}
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); removeSymptom(sym); }}
+                      aria-label={`Remove symptom ${sym}`}
                       className="ml-1 text-blue-400 hover:text-blue-600 font-bold leading-none"
                     >
                       ×
@@ -288,9 +267,10 @@ export default function SymptomChecker() {
                   💡 Common Suggestions
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {COMMON_SYMPTOMS.filter((s) => !symptoms.includes(s)).map((sym) => (
+                  {COMMON_SYMPTOMS.filter((s) => !symptoms.map(s => s.toLowerCase()).includes(s.toLowerCase())).map((sym) => (
                     <button
                       key={sym}
+                      type="button"
                       onClick={() => addSymptom(sym)}
                       className="text-xs border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:border-blue-400 hover:text-blue-600 transition"
                     >
@@ -307,6 +287,7 @@ export default function SymptomChecker() {
               {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
               <button
+                type="button"
                 onClick={analyseSymptoms}
                 disabled={symptoms.length === 0}
                 className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -315,17 +296,7 @@ export default function SymptomChecker() {
               </button>
             </div>
 
-            {/* Disclaimer */}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-              <span className="text-blue-500 mt-0.5">🛡️</span>
-              <div>
-                <p className="text-xs font-semibold text-blue-600 mb-1">Confidential & Secure</p>
-                <p className="text-xs text-blue-500">
-                  Your health information is processed anonymously. Our AI analyzes your symptoms based
-                  on a comprehensive medical database to suggest the most appropriate specialists.
-                </p>
-              </div>
-            </div>
+            <PrivacyDisclaimer />
           </div>
         )}
 
@@ -339,20 +310,16 @@ export default function SymptomChecker() {
               <p className="text-sm text-gray-500">AI analysis will take ~3 seconds</p>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 text-left">
-              <span className="text-blue-500 mt-0.5">🛡️</span>
-              <div>
-                <p className="text-xs font-semibold text-blue-600 mb-1">Confidential & Secure</p>
-                <p className="text-xs text-blue-500">
-                  Your health information is processed anonymously. Our AI analyzes your symptoms based
-                  on a comprehensive medical database to suggest the most appropriate specialists.
-                </p>
-              </div>
-            </div>
+            <PrivacyDisclaimer />
 
+            {/* Fix: disabled while loading to prevent race condition */}
             <button
-              onClick={() => setStep(1)}
-              className="mt-6 text-sm text-gray-500 hover:text-gray-700 underline"
+              type="button"
+              disabled={loading}
+              onClick={() => { if (!loading) { setStep(1); } }}
+              className={`mt-6 text-sm underline ${
+                loading ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               ← Adjust Symptoms
             </button>
@@ -387,12 +354,14 @@ export default function SymptomChecker() {
               </p>
               <div className="flex gap-3 flex-wrap">
                 <button
+                  type="button"
                   onClick={() => { setStep(1); setAnalysis(null); setDoctors([]); }}
                   className="text-xs border border-gray-300 text-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-100 transition"
                 >
                   ← Adjust Symptoms
                 </button>
                 <button
+                  type="button"
                   onClick={() => navigate("/doctors")}
                   className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                 >
@@ -406,9 +375,7 @@ export default function SymptomChecker() {
 
               {/* Possible Conditions */}
               <div className="bg-white rounded-xl border p-4 shadow-sm">
-                <p className="text-xs font-semibold text-gray-700 mb-3 flex items-center gap-1">
-                  🔍 Possible Conditions
-                </p>
+                <p className="text-xs font-semibold text-gray-700 mb-3">🔍 Possible Conditions</p>
                 <ul className="space-y-1.5">
                   {analysis.possibleConditions?.map((cond, i) => (
                     <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
@@ -420,9 +387,7 @@ export default function SymptomChecker() {
 
               {/* What to Expect */}
               <div className="bg-white rounded-xl border p-4 shadow-sm">
-                <p className="text-xs font-semibold text-gray-700 mb-3 flex items-center gap-1">
-                  📋 What to Expect
-                </p>
+                <p className="text-xs font-semibold text-gray-700 mb-3">📋 What to Expect</p>
                 <p className="text-xs text-gray-600 leading-relaxed">{analysis.whatToExpect}</p>
               </div>
 
@@ -476,6 +441,7 @@ export default function SymptomChecker() {
                     No {analysis.specialisation} specialists are currently available.
                   </p>
                   <button
+                    type="button"
                     onClick={() => navigate("/doctors")}
                     className="bg-blue-600 text-white px-5 py-2 rounded-full text-sm hover:bg-blue-700 transition"
                   >
@@ -527,6 +493,7 @@ export default function SymptomChecker() {
                         </div>
                         <hr className="border-gray-100 mb-3" />
                         <button
+                          type="button"
                           onClick={() => handleBookNow(doc.id)}
                           className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition text-xs font-medium"
                         >
@@ -548,12 +515,14 @@ export default function SymptomChecker() {
               </p>
               <div className="flex justify-center gap-3">
                 <button
+                  type="button"
                   onClick={() => navigate("/doctors")}
                   className="text-xs border border-gray-300 text-gray-600 px-4 py-2 rounded-full hover:bg-gray-100 transition"
                 >
                   Browse All Doctors
                 </button>
                 <button
+                  type="button"
                   onClick={() => { setStep(1); setAnalysis(null); setDoctors([]); }}
                   className="text-xs border border-blue-400 text-blue-600 px-4 py-2 rounded-full hover:bg-blue-50 transition flex items-center gap-1"
                 >

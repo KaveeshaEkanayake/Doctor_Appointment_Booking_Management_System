@@ -8,34 +8,14 @@ vi.mock("axios");
 vi.mock("../components/Navbar", () => ({ default: () => <div>Navbar</div> }));
 vi.mock("../components/Footer", () => ({ default: () => <div>Footer</div> }));
 
-// Mock fetch for Groq API
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
-const mockGroqSuccess = {
-  ok:   true,
-  json: async () => ({
-    choices: [{
-      message: {
-        content: JSON.stringify({
-          specialisation:     "Neurology",
-          confidence:         "87%",
-          urgency:            "Medium",
-          possibleConditions: ["Migraine", "Tension Headache", "Hypertension"],
-          whatToExpect:       "The neurologist will perform a physical exam and may order imaging.",
-          dos:                ["Rest in a dark room", "Stay hydrated", "Take prescribed medication"],
-          donts:              ["Avoid bright lights", "Do not skip meals", "Avoid stress"],
-        }),
-      },
-    }],
-  }),
-};
-
-const mockGroqFailure = {
-  ok:   false,
-  json: async () => ({
-    error: { message: "Invalid API key" }
-  }),
+const mockAnalysis = {
+  specialisation:     "Neurology",
+  confidence:         "87%",
+  urgency:            "Medium",
+  possibleConditions: ["Migraine", "Tension Headache", "Hypertension"],
+  whatToExpect:       "The neurologist will perform a physical exam and may order imaging.",
+  dos:                ["Rest in a dark room", "Stay hydrated", "Take prescribed medication"],
+  donts:              ["Avoid bright lights", "Do not skip meals", "Avoid stress"],
 };
 
 const renderSymptomChecker = () => {
@@ -49,6 +29,8 @@ const renderSymptomChecker = () => {
 describe("SymptomChecker", () => {
 
   beforeEach(() => {
+    // Fix: clear localStorage between tests to prevent state leaking
+    localStorage.clear();
     localStorage.setItem("token", "test-token");
     localStorage.setItem("role", "patient");
     vi.clearAllMocks();
@@ -82,8 +64,7 @@ describe("SymptomChecker", () => {
 
     it("should disable submit button when no symptoms entered", () => {
       renderSymptomChecker();
-      const btn = screen.getByText("Submit Symptoms");
-      expect(btn).toBeDisabled();
+      expect(screen.getByText("Submit Symptoms")).toBeDisabled();
     });
   });
 
@@ -110,8 +91,9 @@ describe("SymptomChecker", () => {
       const input = screen.getByPlaceholderText(/persistent headache/i);
       fireEvent.change(input, { target: { value: "Fever" } });
       fireEvent.keyDown(input, { key: "Enter" });
-      fireEvent.change(input, { target: { value: "Fever" } });
+      fireEvent.change(input, { target: { value: "fever" } });
       fireEvent.keyDown(input, { key: "Enter" });
+      // Fix: case-insensitive duplicate check
       const tags = screen.getAllByText("Fever");
       expect(tags.length).toBe(1);
     });
@@ -121,7 +103,8 @@ describe("SymptomChecker", () => {
       const input = screen.getByPlaceholderText(/persistent headache/i);
       fireEvent.change(input, { target: { value: "Fever" } });
       fireEvent.keyDown(input, { key: "Enter" });
-      const removeBtn = screen.getByText("×");
+      // Fix: use aria-label for accessibility
+      const removeBtn = screen.getByRole("button", { name: /remove symptom fever/i });
       fireEvent.click(removeBtn);
       await waitFor(() => {
         expect(screen.queryByText("Fever")).not.toBeInTheDocument();
@@ -146,13 +129,8 @@ describe("SymptomChecker", () => {
       expect(screen.getByText("Submit Symptoms")).not.toBeDisabled();
     });
 
-    it("should show error if submitted with no symptoms", async () => {
+    it("should disable submit button when no symptoms entered", () => {
       renderSymptomChecker();
-      // Manually trigger analyse with no symptoms
-      // Submit button is disabled so we check error state directly
-      const input = screen.getByPlaceholderText(/persistent headache/i);
-      expect(input).toBeInTheDocument();
-      // Button should be disabled
       expect(screen.getByText("Submit Symptoms")).toBeDisabled();
     });
   });
@@ -160,7 +138,7 @@ describe("SymptomChecker", () => {
   // AI Analysis
   describe("AI Analysis", () => {
     it("should show loading step when symptoms are submitted", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqSuccess);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -170,17 +148,17 @@ describe("SymptomChecker", () => {
     });
 
     it("should show results after successful AI analysis", async () => {
-  mockFetch.mockResolvedValueOnce(mockGroqSuccess);
-  renderSymptomChecker();
-  fireEvent.click(screen.getByText("+ Fever"));
-  fireEvent.click(screen.getByText("Submit Symptoms"));
-  await waitFor(() => {
-    expect(screen.getByText(/We recommend seeing a/i)).toBeInTheDocument();
-  }, { timeout: 10000 });
-}, 10000);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
+      renderSymptomChecker();
+      fireEvent.click(screen.getByText("+ Fever"));
+      fireEvent.click(screen.getByText("Submit Symptoms"));
+      await waitFor(() => {
+        expect(screen.getByText(/We recommend seeing a/i)).toBeInTheDocument();
+      }, { timeout: 10000 });
+    }, 10000);
 
     it("should show confidence level in results", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqSuccess);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -190,7 +168,7 @@ describe("SymptomChecker", () => {
     });
 
     it("should show urgency level in results", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqSuccess);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -200,7 +178,7 @@ describe("SymptomChecker", () => {
     });
 
     it("should show possible conditions in results", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqSuccess);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -210,7 +188,7 @@ describe("SymptomChecker", () => {
     });
 
     it("should show disclaimer in results", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqSuccess);
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -220,7 +198,9 @@ describe("SymptomChecker", () => {
     });
 
     it("should show error and return to step 1 when API fails", async () => {
-      mockFetch.mockResolvedValueOnce(mockGroqFailure);
+      axios.post.mockRejectedValueOnce({
+        response: { data: { message: "AI analysis failed. Please try again." } }
+      });
       renderSymptomChecker();
       fireEvent.click(screen.getByText("+ Fever"));
       fireEvent.click(screen.getByText("Submit Symptoms"));
@@ -229,17 +209,17 @@ describe("SymptomChecker", () => {
       }, { timeout: 5000 });
     });
 
-   it("should go back to step 1 when Adjust Symptoms is clicked", async () => {
-  mockFetch.mockResolvedValueOnce(mockGroqSuccess);
-  renderSymptomChecker();
-  fireEvent.click(screen.getByText("+ Fever"));
-  fireEvent.click(screen.getByText("Submit Symptoms"));
-  await waitFor(() => {
-    expect(screen.getByText(/We recommend seeing a/i)).toBeInTheDocument();
-  }, { timeout: 10000 });
-  fireEvent.click(screen.getByText("← Adjust Symptoms"));
-  expect(screen.getByText("How are you feeling today?")).toBeInTheDocument();
-}, 10000);
+    it("should go back to step 1 when Adjust Symptoms is clicked", async () => {
+      axios.post.mockResolvedValueOnce({ data: { success: true, analysis: mockAnalysis } });
+      renderSymptomChecker();
+      fireEvent.click(screen.getByText("+ Fever"));
+      fireEvent.click(screen.getByText("Submit Symptoms"));
+      await waitFor(() => {
+        expect(screen.getByText(/We recommend seeing a/i)).toBeInTheDocument();
+      }, { timeout: 10000 });
+      fireEvent.click(screen.getByText("← Adjust Symptoms"));
+      expect(screen.getByText("How are you feeling today?")).toBeInTheDocument();
+    }, 10000);
   });
 
 });
