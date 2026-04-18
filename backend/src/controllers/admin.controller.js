@@ -141,20 +141,20 @@ export const getDoctorProfiles = async (req, res) => {
         profileStatus: profileStatus,
       },
       select: {
-        id:             true,
-        firstName:      true,
-        lastName:       true,
-        email:          true,
-        phone:          true,
-        specialisation: true,
-        experience:     true,
-        profileStatus:  true,
-        profilePhoto:   true,
-        bio:            true,
-        qualifications: true,
-        consultationFee:true,
-        createdAt:      true,
-        updatedAt:      true,
+        id:              true,
+        firstName:       true,
+        lastName:        true,
+        email:           true,
+        phone:           true,
+        specialisation:  true,
+        experience:      true,
+        profileStatus:   true,
+        profilePhoto:    true,
+        bio:             true,
+        qualifications:  true,
+        consultationFee: true,
+        createdAt:       true,
+        updatedAt:       true,
       },
       orderBy: { updatedAt: "desc" },
     });
@@ -191,5 +191,158 @@ export const updateDoctorProfileStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Doctor not found" });
     }
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// GET /api/admin/patients
+export const getPatients = async (req, res) => {
+  const { search = "" } = req.query;
+
+  try {
+    const patients = await prisma.patient.findMany({
+      where: search ? {
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName:  { contains: search, mode: "insensitive" } },
+          { email:     { contains: search, mode: "insensitive" } },
+        ],
+      } : undefined,
+      select: {
+        id:        true,
+        firstName: true,
+        lastName:  true,
+        email:     true,
+        phone:     true,
+        status:    true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const formatted = patients.map((p) => ({
+      id:     p.id,
+      name:   `${p.firstName} ${p.lastName}`,
+      email:  p.email,
+      phone:  p.phone,
+      status: p.status,
+      joined: p.createdAt,
+    }));
+
+    return res.status(200).json({ success: true, patients: formatted });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// PATCH /api/admin/patients/:id/suspend
+export const togglePatientStatus = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ success: false, message: "Invalid patient ID" });
+  }
+
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    const newStatus = patient.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+
+    await prisma.patient.update({
+      where: { id: parseInt(id) },
+      data:  { status: newStatus },
+    });
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: req.user.id,
+        action:  `${patient.firstName} ${patient.lastName} was ${newStatus === "SUSPENDED" ? "Suspended" : "Activated"}`,
+        target:  `Patient #${id}`,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Patient ${newStatus === "SUSPENDED" ? "suspended" : "activated"} successfully`,
+      status:  newStatus,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// DELETE /api/admin/patients/:id
+export const deletePatient = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ success: false, message: "Invalid patient ID" });
+  }
+
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: req.user.id,
+        action:  `${patient.firstName} ${patient.lastName} account was permanently deleted`,
+        target:  `Patient #${id}`,
+      },
+    });
+
+    await prisma.$transaction([
+      prisma.payment.deleteMany({     where: { patientId: parseInt(id) } }),
+      prisma.appointment.deleteMany({ where: { patientId: parseInt(id) } }),
+      prisma.patient.delete({         where: { id: parseInt(id) } }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Patient deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// GET /api/admin/patients/logs
+export const getAdminLogs = async (req, res) => {
+  try {
+    const logs = await prisma.adminLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take:    50,
+      include: {
+        admin: {
+          select: { firstName: true, lastName: true },
+        },
+      },
+    });
+
+    const formatted = logs.map((log) => ({
+      id:        log.id,
+      action:    log.action,
+      target:    log.target,
+      adminName: `${log.admin.firstName} ${log.admin.lastName}`,
+      createdAt: log.createdAt,
+    }));
+
+    return res.status(200).json({ success: true, logs: formatted });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };

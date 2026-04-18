@@ -53,7 +53,6 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/appointments/review" element={<AppointmentReviewPage />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />      
-      <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
       <Route path="/payment-history" element={<PaymentHistory />} />
       <Route path="/symptom-checker" element={<SymptomChecker />} />
@@ -85,14 +84,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/admin/patients"
-        element={
-          <ProtectedRoute allowedRole="admin">
-            <AdminPatientManagementPage />
-          </ProtectedRoute>
-        }
-      />
+              <Route
+          path="/admin/patients"
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPatientManagementPage />
+            </ProtectedRoute>
+          }
+        />
 
 
       {/* Doctor protected */}
