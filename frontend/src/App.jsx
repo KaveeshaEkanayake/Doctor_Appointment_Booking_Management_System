@@ -29,6 +29,7 @@ import PasswordUpdatedSuccess from "./pages/PasswordUpdatedSuccess";
 import PatientDeleteAccountPage from "./pages/PatientDeleteAccountPage";
 import MySchedule from "./pages/MySchedule";
 import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
+import PaymentHistory from "./pages/PaymentHistoryPage";
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
       <Route path="/history" element={<ViewAppointmentHistory />} />
       <Route path="/appointments/confirmation" element={<AppointmentConfirmationPage />} />
       <Route path="/doctor/schedule" element={<MySchedule />} />
+      <Route path="/payment-history" element={<PaymentHistory />} />
      
 
       {/* Password reset routes */}
