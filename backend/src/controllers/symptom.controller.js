@@ -1,6 +1,17 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Fix: lazy initialization — don't crash if key missing at startup
+let groqClient = null;
+
+const getGroqClient = () => {
+  if (!groqClient) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY is not configured");
+    }
+    groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  }
+  return groqClient;
+};
 
 const SPECIALISATIONS = [
   "General Surgery", "Cardiology", "Dermatology", "Neurology",
@@ -28,8 +39,10 @@ export const analyseSymptoms = async (req, res) => {
   }
 
   try {
+    const groq = getGroqClient();
+
     const completion = await groq.chat.completions.create({
-      model:   "llama-3.3-70b-versatile",
+      model:    "llama-3.3-70b-versatile",
       messages: [
         {
           role:    "system",
@@ -65,7 +78,6 @@ export const analyseSymptoms = async (req, res) => {
 
     const parsed = JSON.parse(content);
 
-    // Validate specialisation
     if (!SPECIALISATIONS.includes(parsed.specialisation)) {
       parsed.specialisation = "General Practice";
     }
