@@ -63,6 +63,7 @@ function App() {
       <Route path="/forgot-password/sent" element={<PasswordResetLinkSent />} />
       <Route path="/forgot-password/reset" element={<PasswordResetPage />} />
       <Route path="/forgot-password/resetsuccess" element={<PasswordUpdatedSuccess />} />
+      <Route path="/patient/acc-delete" element={<PatientDeleteAccountPage />} />
 
       {/* Admin public */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
