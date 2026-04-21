@@ -37,11 +37,12 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { label: "Home",       to: "/"        },
-    { label: "Doctors",    to: "/doctors" },
-    { label: "About",      to: "/about"   },
-    { label: "Contact Us", to: "/contact" },
-  ];
+  { label: "Home",             to: "/"                 },
+  { label: "Doctors",          to: "/doctors"          },
+  { label: "Symptom Checker",  to: "/symptom-checker"  },
+  { label: "About",            to: "/about"            },
+  { label: "Contact Us",       to: "/contact"          },
+];
 
   const displayName = user.firstName
     ? `${user.firstName} ${user.lastName || ""}`.trim()

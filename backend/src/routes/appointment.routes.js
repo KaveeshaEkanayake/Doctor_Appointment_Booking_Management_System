@@ -7,6 +7,7 @@ import {
   getBookedSlots,
   rescheduleAppointment,
   cancelAppointment,
+  getOutstandingBalance,
 } from "../controllers/appointment.controller.js";
 import validate from "../middlewares/validate.middleware.js";
 
@@ -21,6 +22,14 @@ router.get(
   ],
   validate,
   getBookedSlots
+);
+
+// GET /api/appointments/outstanding
+router.get(
+  "/outstanding",
+  authenticate,
+  authorizePatient,
+  getOutstandingBalance
 );
 
 // Patient protected
