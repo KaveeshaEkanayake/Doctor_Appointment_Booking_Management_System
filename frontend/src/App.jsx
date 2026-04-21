@@ -11,7 +11,6 @@ import MyAppointments from "./pages/MyAppointments";
 import PatientProfilePage from "./pages/PatientProfilePage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
-import AdminDoctorsPage from "./pages/AdminDoctorsPage";
 import DoctorsPage from "./pages/DoctorsPage";
 import DoctorPublicProfilePage from "./pages/DoctorPublicProfilePage";
 import AboutPage from "./pages/AboutPage";
@@ -32,6 +31,7 @@ import PaymentPage from "./pages/PaymentPage";
 import BillingPage from "./pages/BillingPage";
 import InvoicePage from "./pages/InvoicePage";
 import SymptomChecker from "./pages/SymptomChecker";
+import DoctorManagement from "./pages/DoctorManagement";
 
 
 import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
@@ -76,15 +76,16 @@ function App() {
             <AdminDashboardPage />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/admin/doctors"
-        element={
-          <ProtectedRoute allowedRole="admin">
-            <AdminDoctorsPage />
-          </ProtectedRoute>
-        }
-      />
+              />
+              <Route
+          path="/admin/doctors"
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <DoctorManagement />
+            </ProtectedRoute>
+          }
+        />
+      
               <Route
           path="/admin/patients"
           element={

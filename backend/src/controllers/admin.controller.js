@@ -346,3 +346,87 @@ export const getAdminLogs = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+// PATCH /api/admin/doctors/:id/suspend
+export const toggleDoctorStatus = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ success: false, message: "Invalid doctor ID" });
+  }
+
+  try {
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
+
+    const newStatus = doctor.status === "APPROVED" ? "SUSPENDED" : "APPROVED";
+
+    const updated = await prisma.doctor.update({
+      where: { id: parseInt(id) },
+      data:  { status: newStatus },
+    });
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: req.user.id,
+        action:  `Dr. ${doctor.firstName} ${doctor.lastName} was ${newStatus === "SUSPENDED" ? "Suspended" : "Activated"}`,
+        target:  `Doctor #${id}`,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Doctor ${newStatus === "SUSPENDED" ? "suspended" : "activated"} successfully`,
+      status:  newStatus,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// DELETE /api/admin/doctors/:id
+export const deleteDoctor = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ success: false, message: "Invalid doctor ID" });
+  }
+
+  try {
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
+
+    await prisma.adminLog.create({
+      data: {
+        adminId: req.user.id,
+        action:  `Dr. ${doctor.firstName} ${doctor.lastName} account was permanently deleted`,
+        target:  `Doctor #${id}`,
+      },
+    });
+
+    await prisma.$transaction([
+      prisma.appointment.deleteMany({ where: { doctorId: parseInt(id) } }),
+      prisma.availability.deleteMany({ where: { doctorId: parseInt(id) } }),
+      prisma.blockedSlot.deleteMany({  where: { doctorId: parseInt(id) } }),
+      prisma.doctor.delete({           where: { id: parseInt(id) } }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Doctor deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};

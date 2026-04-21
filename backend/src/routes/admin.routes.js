@@ -11,6 +11,8 @@ import {
   togglePatientStatus,
   deletePatient,
   getAdminLogs,
+  toggleDoctorStatus,
+  deleteDoctor,
 } from "../controllers/admin.controller.js";
 import { authenticate, authorizeAdmin } from "../middlewares/auth.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
@@ -40,5 +42,8 @@ router.get(    "/patients/logs",        authenticate, authorizeAdmin, getAdminLo
 router.get(    "/patients",             authenticate, authorizeAdmin, getPatients);
 router.patch(  "/patients/:id/suspend", authenticate, authorizeAdmin, togglePatientStatus);
 router.delete( "/patients/:id",         authenticate, authorizeAdmin, deletePatient);
+
+router.patch(  "/doctors/:id/suspend", authenticate, authorizeAdmin, toggleDoctorStatus);
+router.delete( "/doctors/:id",         authenticate, authorizeAdmin, deleteDoctor);
 
 export default router;
