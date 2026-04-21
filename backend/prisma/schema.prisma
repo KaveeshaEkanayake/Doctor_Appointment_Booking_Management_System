@@ -7,19 +7,21 @@ datasource db {
 }
 
 model Patient {
-  id           Int           @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  email        String        @unique
-  password     String
-  phone        String
-  address      String?
-  dateOfBirth  DateTime?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @default(now()) @updatedAt
-  appointments Appointment[]
+  id               Int           @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  email            String        @unique
+  password         String
+  phone            String
+  address          String?
+  dateOfBirth      DateTime?
+  status           String        @default("ACTIVE")
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @default(now()) @updatedAt
+  appointments     Appointment[]
+  payments         Payment[]
 }
 model Doctor {
   id                  Int            @id @default(autoincrement())
@@ -65,6 +67,7 @@ model Appointment {
   date            DateTime
   time            String
   reason          String?
+  notes           String?           // ← add this line
   status          AppointmentStatus @default(PENDING)
   rejectionReason String?
   reminderSent    Boolean           @default(false)
@@ -72,6 +75,7 @@ model Appointment {
   updatedAt       DateTime          @default(now()) @updatedAt
   patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  payment  Payment?
 }
 
 model Admin {
@@ -82,6 +86,7 @@ model Admin {
   lastName  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  logs AdminLog[]
 }
 model BlockedSlot {
   id        Int      @id @default(autoincrement())
@@ -96,6 +101,27 @@ model BlockedSlot {
 
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date])
+}
+model Payment {
+  id            Int      @id @default(autoincrement())
+  appointmentId Int      @unique
+  patientId     Int
+  amount        Float
+  cardName      String
+  cardLast4     String
+  status        String   @default("SUCCESS")
+  paidAt        DateTime @default(now())
+  createdAt     DateTime @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+model AdminLog {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  action    String
+  target    String
+  createdAt DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id])
 }
 enum Status {
   PENDING
@@ -116,6 +142,7 @@ enum AppointmentStatus {
   CANCELLED
   COMPLETED
   MISSED
+  PAID
 }
 
 enum Day {

@@ -4,8 +4,12 @@ import { authenticate, authorizeDoctor } from "../middlewares/auth.middleware.js
 import {
   getDoctorAppointments,
   updateAppointmentStatus,
+  addAppointmentNotes,
+  getPatientNotes,
+  completeAppointment,
 } from "../controllers/doctor.appointment.controller.js";
 import validate from "../middlewares/validate.middleware.js";
+
 
 const router = Router();
 
@@ -30,4 +34,29 @@ router.patch(
   updateAppointmentStatus
 );
 
+// PATCH /api/doctor/appointments/:id/notes
+router.patch(
+  "/appointments/:id/notes",
+  authenticate,
+  authorizeDoctor,
+  [
+    body("notes").notEmpty().withMessage("Notes cannot be empty"),
+  ],
+  validate,
+  addAppointmentNotes
+);
+// GET /api/doctor/patients/:patientId/notes
+router.get(
+  "/patients/:patientId/notes",
+  authenticate,
+  authorizeDoctor,
+  getPatientNotes
+);
+// PATCH /api/doctor/appointments/:id/complete
+router.patch(
+  "/appointments/:id/complete",
+  authenticate,
+  authorizeDoctor,
+  completeAppointment
+);
 export default router;
