@@ -122,3 +122,52 @@ export const loginDoctor = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+// GET /api/doctor/earnings
+export const getDoctorEarnings = async (req, res) => {
+  const doctorId = req.user.id;
+
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        doctorId,
+        status: "PAID",
+      },
+      include: {
+        payment: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName:  true,
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    const data = appointments.map((appt) => ({
+      appointmentId: appt.id,
+      patientName:   `${appt.patient.firstName} ${appt.patient.lastName}`,
+      date:          appt.payment?.paidAt
+        ? new Date(appt.payment.paidAt).toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric",
+          })
+        : new Date(appt.date).toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric",
+          }),
+      amount: appt.payment?.amount ?? 0,
+      status: "Paid",
+    }));
+
+    const total = data.reduce((sum, e) => sum + e.amount, 0);
+
+    return res.status(200).json({
+      success: true,
+      total,
+      data,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};

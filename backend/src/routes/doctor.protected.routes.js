@@ -4,7 +4,7 @@ import { authenticate, authorizeDoctor } from "../middlewares/auth.middleware.js
 import { getProfile, updateProfile } from "../controllers/doctor.profile.controller.js";
 import { getAvailability, updateAvailability } from "../controllers/availability.controller.js";
 import { getDashboardStats } from "../controllers/doctor.dashboard.controller.js";
-
+import { getDoctorEarnings } from "../controllers/doctor.controller.js";
 const router = express.Router();
 
 const updateProfileValidation = [
@@ -43,5 +43,6 @@ router.get("/availability", authenticate, authorizeDoctor, getAvailability);
 router.put("/availability", authenticate, authorizeDoctor, updateAvailabilityValidation, updateAvailability);
 
 router.get("/dashboard", authenticate, authorizeDoctor, getDashboardStats);
+router.get("/earnings", authenticate, authorizeDoctor, getDoctorEarnings);
 
 export default router;

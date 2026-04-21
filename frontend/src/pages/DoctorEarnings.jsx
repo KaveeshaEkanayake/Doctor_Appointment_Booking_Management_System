@@ -3,9 +3,9 @@ import DoctorLayout from "../layouts/DoctorLayout";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ── Bar Chart (UNCHANGED) ────────────────────────────────────────────────────
+// ── Bar Chart ─────────────────────────────────────────────────────────────────
 function EarningsChart({ data }) {
-  const max = data.length ? Math.max(...data.map(d => d.amount)) : 800;
+  const max    = data.length ? Math.max(...data.map(d => d.amount)) : 800;
   const chartH = 180;
 
   if (!data.length) {
@@ -21,32 +21,29 @@ function EarningsChart({ data }) {
       <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 16 }}>
         Earnings by Month
       </p>
-
       <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
         <div style={yAxisStyle}>
           {[0,1,2,3,4,5,6,7,8].map(i => (
             <span key={i}>{Math.round((max / 8) * i)}</span>
           ))}
         </div>
-
         <div style={{ flex: 1, position: "relative" }}>
           {[0,1,2,3,4,5,6,7,8].map(i => (
             <div key={i} style={{
-              position: "absolute",
+              position:  "absolute",
               left: 0, right: 0,
-              bottom: 20 + (i / 8) * (chartH - 20),
+              bottom:    20 + (i / 8) * (chartH - 20),
               borderTop: "1px solid #f0f0f0",
             }} />
           ))}
-
           <div style={{ display: "flex", alignItems: "flex-end", height: chartH, gap: 8, paddingBottom: 20 }}>
             {data.map(d => {
               const barH = ((d.amount / (max * 1.1)) * (chartH - 20));
               return (
                 <div key={d.month} style={{ flex: 1, textAlign: "center" }}>
                   <div style={{
-                    width: "100%",
-                    height: barH,
+                    width:      "100%",
+                    height:     barH,
                     background: "#6b9fe4",
                     borderRadius: "3px 3px 0 0",
                   }} />
@@ -57,7 +54,6 @@ function EarningsChart({ data }) {
           </div>
         </div>
       </div>
-
       <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 6 }}>
         Earnings include only paid appointments.
       </p>
@@ -65,74 +61,58 @@ function EarningsChart({ data }) {
   );
 }
 
-// ── Helper ───────────────────────────────────────────────────────────────────
+// ── Helper ────────────────────────────────────────────────────────────────────
 function buildMonthlyData(earnings) {
   const map = {};
   earnings.forEach(e => {
     const d = new Date(e.date);
     if (isNaN(d)) return;
-
-    const key = d.toLocaleString("default", { month: "long", year: "numeric" });
+    const key   = d.toLocaleString("default", { month: "long", year: "numeric" });
     const short = d.toLocaleString("default", { month: "short" });
-
     map[key] = {
-      month: short,
-      amount: (map[key]?.amount || 0) + (e.amount || 0)
+      month:  short,
+      amount: (map[key]?.amount || 0) + (e.amount || 0),
     };
   });
-
   return Object.values(map);
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DoctorEarnings() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
   const [earnings, setEarnings] = useState([]);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
-  // ✅ Dynamic month label
   const getCurrentMonthLabel = () => {
-    const now = new Date();
+    const now   = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-    const format = (d) =>
-      d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-
-    return `${format(start)} - ${format(end)}`;
+    const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const fmt   = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return `${fmt(start)} - ${fmt(end)}`;
   };
 
   const [currentPeriodLabel] = useState(getCurrentMonthLabel());
 
-  // ── Fetch (FIXED) ──────────────────────────────────────────────────────────
   const fetchEarnings = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const token = localStorage.getItem("token");
-
-      const res = await fetch(`${API_URL}/api/doctor/earnings`, {
+      const res   = await fetch(`${API_URL}/api/doctor/earnings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const text = await res.text();
-
       let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("No Earnings");
-      }
+      try { data = JSON.parse(text); }
+      catch { throw new Error("Invalid response from server"); }
 
       if (!res.ok || !data.success) {
         throw new Error(data?.message || "Failed to fetch earnings");
       }
 
-      const paid = (data.data || []).filter(e => e.status === "Paid");
-      setEarnings(paid);
-
+      setEarnings(data.data || []);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -143,26 +123,24 @@ export default function DoctorEarnings() {
 
   useEffect(() => { fetchEarnings(); }, [fetchEarnings]);
 
-  // ── Derived ────────────────────────────────────────────────────────────────
   const total = useMemo(() =>
     earnings.reduce((sum, e) => sum + (e.amount || 0), 0),
   [earnings]);
 
   const filteredData = useMemo(() => {
-    if (!dateRange.from || !dateRange.to) return earnings;
-
+    if (!dateRange.from && !dateRange.to) return earnings;
     return earnings.filter(e => {
       const d = new Date(e.date);
-      return d >= new Date(dateRange.from) && d <= new Date(dateRange.to);
+      const from = dateRange.from ? new Date(dateRange.from) : null;
+      const to   = dateRange.to   ? new Date(dateRange.to)   : null;
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      return true;
     });
   }, [earnings, dateRange]);
 
-  const monthlyChartData = useMemo(
-    () => buildMonthlyData(earnings),
-    [earnings]
-  );
+  const monthlyChartData = useMemo(() => buildMonthlyData(earnings), [earnings]);
 
-  // ── UI ─────────────────────────────────────────────────────────────────────
   return (
     <DoctorLayout>
       <div style={{ padding: "32px 36px", background: "#f9fafb", minHeight: "100vh" }}>
@@ -185,16 +163,13 @@ export default function DoctorEarnings() {
 
         {/* Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 28 }}>
-
-          {/* Total Card with hover effect */}
           <div
             style={cardStyle}
             onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
             onMouseLeave={e => e.currentTarget.style.transform = "translateY(0px)"}
           >
             <p style={{ opacity: 0.8 }}>Total Earnings (Paid)</p>
-            <p style={{ opacity: 0.6 }}>{currentPeriodLabel}</p>
-
+            <p style={{ opacity: 0.6, fontSize: 12 }}>{currentPeriodLabel}</p>
             {loading ? (
               <div style={skeleton} />
             ) : (
@@ -202,37 +177,59 @@ export default function DoctorEarnings() {
                 Rs.{total.toLocaleString()}.00
               </h2>
             )}
+            <p style={{ opacity: 0.7, fontSize: 12, marginTop: 8 }}>
+              {earnings.length} paid appointment{earnings.length !== 1 ? "s" : ""}
+            </p>
           </div>
 
           <EarningsChart data={monthlyChartData} />
         </div>
 
-        {/* Filters + Period Nav */}
+        {/* Filters */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ display: "flex", gap: 10 }}>
-           
-            <input type="date" style={inputStyle}
-              onChange={e => setDateRange(r => ({ ...r, to: e.target.value }))} />
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <label style={{ fontSize: 13, color: "#6b7280" }}>From</label>
+            <input
+              type="date"
+              style={inputStyle}
+              value={dateRange.from}
+              onChange={e => setDateRange(r => ({ ...r, from: e.target.value }))}
+            />
+            <label style={{ fontSize: 13, color: "#6b7280" }}>To</label>
+            <input
+              type="date"
+              style={inputStyle}
+              value={dateRange.to}
+              onChange={e => setDateRange(r => ({ ...r, to: e.target.value }))}
+            />
+            {(dateRange.from || dateRange.to) && (
+              <button
+                onClick={() => setDateRange({ from: "", to: "" })}
+                style={{ ...inputStyle, cursor: "pointer", background: "#f3f4f6", border: "none" }}
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button style={navBtn}>‹</button>
             <div style={{
               border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 14px",
-              fontSize: 13, color: "#374151", display: "flex", alignItems: "center", gap: 6,
-              background: "#fff",
+              fontSize: 13, color: "#374151", background: "#fff",
             }}>
-              {currentPeriodLabel} <span style={{ fontSize: 11 }}>▾</span>
+              {currentPeriodLabel}
             </div>
-            <button style={navBtn}>›</button>
           </div>
         </div>
 
         {/* Table */}
         <div style={boxStyle}>
-          <h2 style={{ fontWeight: 600, marginBottom: 16, fontSize: 15 }}>
-            Earnings by Appointment
-          </h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h2 style={{ fontWeight: 600, fontSize: 15 }}>Earnings by Appointment</h2>
+            <span style={{ fontSize: 12, color: "#9ca3af" }}>
+              {filteredData.length} record{filteredData.length !== 1 ? "s" : ""}
+            </span>
+          </div>
 
           {loading ? (
             <p style={{ color: "#9ca3af", fontSize: 13, textAlign: "center", padding: "24px 0" }}>
@@ -258,7 +255,7 @@ export default function DoctorEarnings() {
                   {filteredData.map((e, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid #f9fafb" }}>
                       <td style={{ padding: "13px 12px", color: "#1d6ef6", fontWeight: 500 }}>
-                        {e.appointmentId}
+                        #{e.appointmentId}
                       </td>
                       <td style={{ padding: "13px 12px", color: "#111827" }}>
                         {e.patientName}
@@ -270,22 +267,13 @@ export default function DoctorEarnings() {
                         Rs.{(e.amount || 0).toLocaleString()}.00
                       </td>
                       <td style={{ padding: "13px 12px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{
-                            background: "#dcfce7", color: "#16a34a",
-                            borderRadius: 20, padding: "3px 12px",
-                            fontSize: 12, fontWeight: 600,
-                          }}>
-                            Paid
-                          </span>
-                          <button style={{
-                            background: "none", border: "none",
-                            color: "#1d6ef6", fontSize: 12,
-                            cursor: "pointer", padding: 0, fontWeight: 500,
-                          }}>
-                            View Invoice
-                          </button>
-                        </div>
+                        <span style={{
+                          background: "#dcfce7", color: "#16a34a",
+                          borderRadius: 20, padding: "3px 12px",
+                          fontSize: 12, fontWeight: 600,
+                        }}>
+                          Paid
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -294,7 +282,9 @@ export default function DoctorEarnings() {
 
               {filteredData.length === 0 && (
                 <p style={{ textAlign: "center", color: "#9ca3af", padding: "28px 0", fontSize: 13 }}>
-                  No earnings found for this date range.
+                  {earnings.length === 0
+                    ? "No paid appointments yet."
+                    : "No earnings found for this date range."}
                 </p>
               )}
             </div>
@@ -306,67 +296,58 @@ export default function DoctorEarnings() {
   );
 }
 
-// ── Styles ───────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 const boxStyle = {
-  background: "#fff",
-  border: "1px solid #e5e7eb",
+  background:   "#fff",
+  border:       "1px solid #e5e7eb",
   borderRadius: 12,
-  padding: "20px 24px",
+  padding:      "20px 24px",
 };
 
 const cardStyle = {
   ...boxStyle,
-  background: "#1d6ef6",
-  color: "#fff",
-  transition: "all 0.2s ease",
-  cursor: "pointer",
+  background:  "#1d6ef6",
+  color:       "#fff",
+  transition:  "all 0.2s ease",
+  cursor:      "pointer",
 };
 
 const inputStyle = {
-  border: "1px solid #d1d5db",
+  border:       "1px solid #d1d5db",
   borderRadius: 8,
-  padding: "7px 12px",
+  padding:      "7px 12px",
+  fontSize:     13,
 };
 
 const errorStyle = {
-  background: "#fef2f2",
-  padding: 10,
+  background:   "#fef2f2",
+  padding:      10,
   borderRadius: 8,
-  color: "#dc2626",
+  color:        "#dc2626",
   marginBottom: 10,
 };
 
 const retryBtn = {
   marginLeft: 10,
-  color: "#1d6ef6",
+  color:      "#1d6ef6",
   background: "none",
-  border: "none",
-  cursor: "pointer",
+  border:     "none",
+  cursor:     "pointer",
 };
 
 const skeleton = {
-  width: 150,
-  height: 30,
-  background: "rgba(255,255,255,0.3)",
+  width:        150,
+  height:       30,
+  background:   "rgba(255,255,255,0.3)",
   borderRadius: 6,
-  marginTop: 10,
+  marginTop:    10,
 };
 
 const yAxisStyle = {
-  display: "flex",
-  flexDirection: "column-reverse",
+  display:        "flex",
+  flexDirection:  "column-reverse",
   justifyContent: "space-between",
-  height: 180,
-  fontSize: 10,
-  color: "#9ca3af",
-};
-
-const navBtn = {
-  width: 32, height: 32,
-  border: "1px solid #d1d5db",
-  borderRadius: 8,
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 16,
-  color: "#374151",
+  height:         180,
+  fontSize:       10,
+  color:          "#9ca3af",
 };
