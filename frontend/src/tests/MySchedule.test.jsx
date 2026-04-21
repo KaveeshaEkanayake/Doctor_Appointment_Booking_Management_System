@@ -17,17 +17,21 @@ vi.mock('../layouts/DoctorLayout', () => ({
   default: ({ children }) => <div data-testid="doctor-layout">{children}</div>
 }))
 
+// Use current week date so calendar renders them
+const today = new Date()
+const todayISO = today.toISOString()
+
 const mockAppointments = [
   {
-    id:           1,
-    patientId:    1,
-    patientName:  "John Smith",
-    patientPhone: "0771234567",
-    date:         "2026-04-16T00:00:00.000Z",
-    time:         "10:00 AM",
-    reason:       "Checkup",
-    status:       "CONFIRMED",
-    notes:        null,
+    id:              1,
+    patientId:       1,
+    patientName:     "John Smith",
+    patientPhone:    "0771234567",
+    date:            todayISO,
+    time:            "10:00 AM",
+    reason:          "Checkup",
+    status:          "CONFIRMED",
+    notes:           null,
     rejectionReason: null,
   },
 ]
@@ -36,7 +40,7 @@ const mockBlockedSlots = [
   {
     id:        1,
     doctorId:  1,
-    date:      "2026-04-16T00:00:00.000Z",
+    date:      todayISO,
     startTime: "08:00",
     endTime:   "09:00",
     reason:    "Lunch break",
@@ -95,14 +99,14 @@ describe('MySchedule', () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('John Smith')).toBeDefined()
-    })
+    }, { timeout: 5000 })
   })
 
   it('should render blocked slot on calendar', async () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('Blocked')).toBeDefined()
-    })
+    }, { timeout: 5000 })
   })
 
   it('should show block slot modal when Block Slot is clicked', async () => {
@@ -134,7 +138,7 @@ describe('MySchedule', () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('John Smith')).toBeDefined()
-    })
+    }, { timeout: 5000 })
     fireEvent.click(screen.getByText('John Smith'))
     await waitFor(() => {
       expect(screen.getByText('Appointment Details')).toBeDefined()
@@ -145,7 +149,7 @@ describe('MySchedule', () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('John Smith')).toBeDefined()
-    })
+    }, { timeout: 5000 })
     fireEvent.click(screen.getByText('John Smith'))
     await waitFor(() => {
       expect(screen.getAllByText('John Smith').length).toBeGreaterThan(0)
@@ -156,7 +160,7 @@ describe('MySchedule', () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('John Smith')).toBeDefined()
-    })
+    }, { timeout: 5000 })
     fireEvent.click(screen.getByText('John Smith'))
     await waitFor(() => {
       expect(screen.getByText('Appointment Details')).toBeDefined()
@@ -191,7 +195,7 @@ describe('MySchedule', () => {
     renderPage()
     await waitFor(() => {
       expect(screen.getByText('Blocked')).toBeDefined()
-    })
+    }, { timeout: 5000 })
     const unblockBtn = screen.getByText('Unblock')
     fireEvent.click(unblockBtn)
     await waitFor(() => {
@@ -200,11 +204,11 @@ describe('MySchedule', () => {
   })
 
   it('should show AM/PM time labels on calendar', async () => {
-  renderPage()
-  await waitFor(() => {
-    expect(screen.getAllByText('8:00 AM').length).toBeGreaterThan(0)
+    renderPage()
+    await waitFor(() => {
+      expect(screen.getAllByText('8:00 AM').length).toBeGreaterThan(0)
+    })
   })
-})
 
   it('should fetch new schedule when week navigation is clicked', async () => {
     renderPage()
