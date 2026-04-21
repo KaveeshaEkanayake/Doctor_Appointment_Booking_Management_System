@@ -32,6 +32,7 @@ import BillingPage from "./pages/BillingPage";
 import InvoicePage from "./pages/InvoicePage";
 import SymptomChecker from "./pages/SymptomChecker";
 import DoctorManagement from "./pages/DoctorManagement";
+import DoctorEarnings from "./pages/DoctorEarnings";
 
 
 import AdminPatientManagementPage from "./pages/AdminPatientManagementPage";
@@ -139,6 +140,14 @@ function App() {
           </ProtectedRoute>
         }
       />
+              <Route
+          path="/doctor/earnings"
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorEarnings />
+            </ProtectedRoute>
+          }
+        />
 
       {/* Patient protected */}
       <Route
