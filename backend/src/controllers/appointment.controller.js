@@ -156,6 +156,7 @@ export const getBookedSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid date value" });
     }
 
+    // Get booked appointments
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId: doctorIdNum,

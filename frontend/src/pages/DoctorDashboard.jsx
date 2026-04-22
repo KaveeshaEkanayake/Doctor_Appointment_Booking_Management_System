@@ -7,7 +7,6 @@ import { FiBell } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate]         = useState(new Date());
