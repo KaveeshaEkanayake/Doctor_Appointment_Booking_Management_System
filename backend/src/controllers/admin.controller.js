@@ -44,11 +44,11 @@ export const adminLogin = async (req, res) => {
   }
 };
 
-// GET /api/admin/doctors?status=PENDING
+/// GET /api/admin/doctors?status=PENDING
 export const getDoctors = async (req, res) => {
   const { status = "PENDING" } = req.query;
 
-  const validStatuses = ["PENDING", "APPROVED", "REJECTED"];
+  const validStatuses = ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"];
   if (!validStatuses.includes(status.toUpperCase())) {
     return res.status(400).json({ success: false, message: "Invalid status filter" });
   }

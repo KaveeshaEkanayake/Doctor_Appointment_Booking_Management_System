@@ -7,7 +7,6 @@ import { FiBell } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate]         = useState(new Date());
@@ -20,7 +19,12 @@ export default function DoctorDashboard() {
   const [saveError, setSaveError]             = useState("");
   const [previousNotes, setPreviousNotes]     = useState([]);
   const [notesLoading, setNotesLoading]       = useState(false);
+<<<<<<< Updated upstream
   const [stats, setStats]                     = useState({
+=======
+
+  const [stats, setStats] = useState({
+>>>>>>> Stashed changes
     today:    0,
     patients: 0,
     pending:  0,
@@ -415,10 +419,18 @@ export default function DoctorDashboard() {
               </div>
             </div>
 
+<<<<<<< Updated upstream
+=======
+            {/* Error */}
+>>>>>>> Stashed changes
             {saveError && (
               <p className="text-red-500 text-sm mt-2">{saveError}</p>
             )}
 
+<<<<<<< Updated upstream
+=======
+            {/* Footer */}
+>>>>>>> Stashed changes
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
