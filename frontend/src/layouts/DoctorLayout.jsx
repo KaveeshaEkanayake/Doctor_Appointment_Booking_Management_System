@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { RiDashboardLine } from "react-icons/ri";
-import { FiCalendar, FiClock, FiUser, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiCalendar, FiClock, FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiDollarSign } from "react-icons/fi";
 import logoImg from "../assets/Logo04.PNG";
 
 export default function DoctorLayout({ children }) {
-  const navigate       = useNavigate();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const user = (() => {
@@ -20,12 +20,14 @@ export default function DoctorLayout({ children }) {
     navigate("/login");
   };
 
-  const navItems = [
-    { to: "/doctor/dashboard",     icon: RiDashboardLine, label: "Dashboard"        },
-    { to: "/doctor/appointments",  icon: FiCalendar,      label: "My Appointments"  },
-    { to: "/doctor/availability",  icon: FiClock,         label: "My Availability"  },
-    { to: "/doctor/profile",       icon: FiUser,          label: "Profile"          },
-  ];
+const navItems = [
+  { to: "/doctor/dashboard",    icon: RiDashboardLine, label: "Dashboard"       },
+  { to: "/doctor/appointments", icon: FiCalendar,      label: "My Appointments" },
+  { to: "/doctor/schedule",     icon: FiGrid,          label: "My Schedule"     },
+  { to: "/doctor/availability", icon: FiClock,         label: "My Availability" },
+  { to: "/doctor/earnings",     icon: FiDollarSign,    label: "Earnings"        },
+  { to: "/doctor/profile",      icon: FiUser,          label: "Profile"         },
+];
 
   return (
     <div className="flex h-screen bg-[#F6FAFF]">

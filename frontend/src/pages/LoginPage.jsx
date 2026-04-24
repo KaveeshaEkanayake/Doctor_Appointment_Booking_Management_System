@@ -26,7 +26,6 @@ export default function LoginPage() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", role);
 
-      // ← Store user info for Header and other components
       if (role === "patient" && res.data.patient) {
         localStorage.setItem("user", JSON.stringify(res.data.patient));
       } else if (role === "doctor" && res.data.doctor) {
@@ -34,7 +33,7 @@ export default function LoginPage() {
       }
 
       if (role === "patient") {
-        navigate("/doctors");
+        navigate("/patient/dashboard");
       } else {
         navigate("/doctor/dashboard");
       }
@@ -94,7 +93,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-4 bg-white p-6 rounded-lg">
           <div>
-            <label htmlFor="email" className="block mb-2 text-gray-700">Email Address</label>
+            <label htmlFor="email" className="block mb-2 text-gray-700">
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
@@ -106,7 +107,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-2 text-gray-700">Your Password</label>
+            <label htmlFor="password" className="block mb-2 text-gray-700">
+              Your Password
+            </label>
             <input
               id="password"
               type="password"
@@ -128,7 +131,9 @@ export default function LoginPage() {
             <label className="flex items-center">
               <input type="checkbox" className="mr-2" /> Remember me
             </label>
-            <a href="/forgot" className="text-blue-600 hover:underline">Forgot password?</a>
+            <a href="/forgot-password" className="text-blue-600 hover:underline">
+              Forgot password?
+            </a>
           </div>
         </form>
 

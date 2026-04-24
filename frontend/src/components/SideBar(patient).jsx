@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import logoImg from "../assets/Logo04.PNG";
-import { FaHome, FaCalendarAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaCalendarAlt, FaUser, FaSignOutAlt, FaCreditCard, FaHistory } from "react-icons/fa";
 
 export default function Sidebar({ activeMenu, setActiveMenu }) {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
       </div>
 
       <div className="space-y-6">
-        <NavLink to="/doctors" className={linkClass}>
+        <NavLink to="/patient/dashboard" className={linkClass}>
           <FaHome /> Dashboard
         </NavLink>
 
@@ -58,8 +58,16 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
           </div>
         )}
 
+        <NavLink to="/patient/appointment-history" className={linkClass}>
+          <FaHistory /> History
+        </NavLink>
+
         <NavLink to="/patient/profile" className={linkClass}>
           <FaUser /> Profile
+        </NavLink>
+
+        <NavLink to="/patient/billing" className={linkClass}>
+          <FaCreditCard /> Billing
         </NavLink>
 
         <button
