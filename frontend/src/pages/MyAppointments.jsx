@@ -279,6 +279,27 @@ export default function MyAppointments() {
                             </button>
                           )}
                         </div>
+
+                        <div className="flex justify-end gap-2">
+                          {canReschedule && (
+                            <button
+                              type="button"
+                              onClick={() => openReschedule(appointment)}
+                              className="text-xs bg-white text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-400 px-3 py-0.5 rounded-full transition whitespace-nowrap"
+                            >
+                              Reschedule
+                            </button>
+                          )}
+                          {canCancel && (
+                            <button
+                              type="button"
+                              onClick={() => openCancel(appointment)}
+                              className="text-xs bg-white text-red-500 hover:bg-red-500 hover:text-white border border-red-400 px-3 py-0.5 rounded-full transition whitespace-nowrap"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 
