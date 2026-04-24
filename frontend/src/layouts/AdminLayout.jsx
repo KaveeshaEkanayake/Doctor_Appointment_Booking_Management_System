@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { RiDashboardLine }      from "react-icons/ri";
-import { FiUsers, FiLogOut, FiMenu, FiX, FiCalendar, FiBarChart2, FiSettings } from "react-icons/fi";
+import { FiUsers, FiUser, FiLogOut, FiMenu, FiX, FiCalendar, FiBarChart2, FiSettings } from "react-icons/fi";
 import logoImg from "../assets/Logo04.PNG";
 
 export default function AdminLayout({ children }) {
@@ -17,6 +17,7 @@ export default function AdminLayout({ children }) {
   const activeNavItems = [
     { to: "/admin/dashboard", icon: RiDashboardLine, label: "Dashboard" },
     { to: "/admin/doctors",   icon: FiUsers,         label: "Doctors"   },
+    { to: "/admin/patients",  icon: FiUser,          label: "Patients"  },
   ];
 
   const comingSoonItems = [

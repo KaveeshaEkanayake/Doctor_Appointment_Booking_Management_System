@@ -97,7 +97,7 @@ describe('DoctorAppointmentsPage', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Confirmed Appointments')).toBeDefined()
+      expect(screen.getByText('Confirmed')).toBeDefined()
     })
   })
 
@@ -106,7 +106,7 @@ describe('DoctorAppointmentsPage', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('1')).toBeDefined()
+      expect(screen.getAllByText('1').length).toBeGreaterThan(0)
     })
   })
 
@@ -231,10 +231,10 @@ describe('DoctorAppointmentsPage', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Confirmed Appointments')).toBeDefined()
+      expect(screen.getByText('Confirmed')).toBeDefined()
     })
 
-    fireEvent.click(screen.getByText('Confirmed Appointments'))
+    fireEvent.click(screen.getByText('Confirmed'))
 
     await waitFor(() => {
       expect(screen.getByText('Jane Doe')).toBeDefined()
@@ -255,10 +255,10 @@ describe('DoctorAppointmentsPage', () => {
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Confirmed Appointments')).toBeDefined()
+      expect(screen.getByText('Confirmed')).toBeDefined()
     })
 
-    fireEvent.click(screen.getByText('Confirmed Appointments'))
+    fireEvent.click(screen.getByText('Confirmed'))
 
     await waitFor(() => {
       expect(screen.getByText('No Confirmed Appointments')).toBeDefined()

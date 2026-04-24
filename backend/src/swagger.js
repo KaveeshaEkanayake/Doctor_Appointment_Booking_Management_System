@@ -17,6 +17,10 @@ const options = {
         url:         "https://doctor-app-staging.up.railway.app",
         description: "Staging",
       },
+      {
+        url:         "https://doctorappointmentbookingmanagementsystem-production.up.railway.app",
+        description: "Production",
+      },
     ],
     components: {
       securitySchemes: {

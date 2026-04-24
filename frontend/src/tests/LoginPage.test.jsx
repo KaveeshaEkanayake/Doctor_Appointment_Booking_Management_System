@@ -49,24 +49,23 @@ describe('LoginPage', () => {
     expect(emailInput.value).toBe('john@gmail.com')
     expect(passwordInput.value).toBe('password123')
   })
+it('should store token and navigate to patient dashboard on successful patient login', async () => {
+  axios.post.mockResolvedValueOnce({ data: { token: 'fake-jwt-token' } })
+  renderLoginPage()
 
-  it('should store token and navigate to doctors on successful patient login', async () => {
-    axios.post.mockResolvedValueOnce({ data: { token: 'fake-jwt-token' } })
-    renderLoginPage()
-
-    fireEvent.change(screen.getByLabelText('Email Address'), {
-      target: { value: 'john@gmail.com' }
-    })
-    fireEvent.change(screen.getByLabelText('Your Password'), {
-      target: { value: 'password123' }
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Log in' }))
-
-    await waitFor(() => {
-      expect(localStorage.getItem('token')).toBe('fake-jwt-token')
-      expect(mockNavigate).toHaveBeenCalledWith('/doctors')
-    })
+  fireEvent.change(screen.getByLabelText('Email Address'), {
+    target: { value: 'john@gmail.com' }
   })
+  fireEvent.change(screen.getByLabelText('Your Password'), {
+    target: { value: 'password123' }
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Log in' }))
+
+  await waitFor(() => {
+    expect(localStorage.getItem('token')).toBe('fake-jwt-token')
+    expect(mockNavigate).toHaveBeenCalledWith('/patient/dashboard') 
+  })
+})
 
   it('should navigate to doctor dashboard on successful doctor login', async () => {
     axios.post.mockResolvedValueOnce({ data: { token: 'fake-doctor-token' } })
