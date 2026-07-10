@@ -103,10 +103,11 @@ Run database migrations:
 npx prisma migrate deploy
 ```
 
-Seed the database (creates admin account):
+Seed the database (creates a default admin account for local development only):
 ```bash
 npx prisma db seed
 ```
+> ⚠️ **Security note:** The seed script creates a default admin account with a placeholder password defined in your local seed file / environment variables. **Change this password immediately after first login**, and never seed or expose default credentials in a production environment. Do not commit real credentials to version control or documentation.
 
 Start the development server:
 
@@ -115,7 +116,7 @@ npm run dev
 ```
 
 Backend runs on `http://localhost:5000`  
-API docs available at `http://localhost:5000/api/docs`
+API docs (Swagger) available at `http://localhost:5000/api/docs` — **development only**
 
 ### Frontend Setup
 
@@ -137,32 +138,6 @@ npm run dev
 ```
 
 Frontend runs on `http://localhost:5173`
-
----
-
-## Default Admin Credentials
-```
-Email:    admin@dams.com
-Password: Admin@1234
-```
-
----
-
-## Running Tests
-
-### Backend
-
-```bash
-cd backend
-npm test
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm test
-```
 
 ---
 
@@ -202,14 +177,8 @@ feature/*     → feature branches (PR into development)
 ## Live Demo
 
 - **Production:** https://medicarelk.vercel.app
-- **Staging:** https://doctor-appointment-booki-git-cdacf1-kaveeshaekanayakes-projects.vercel.app
-- **API:** https://doctorappointmentbookingmanagementsystem-production.up.railway.app/api/docs
 
----
-
-## API Documentation
-
-Swagger UI is available at `/api/docs` on both staging and production backend URLs.
+> Note: API documentation (Swagger) is intentionally not linked here for production/staging environments. `/api/docs` should be disabled or placed behind authentication in any publicly deployed environment to avoid exposing the full API surface to unauthenticated users.
 
 ---
 
