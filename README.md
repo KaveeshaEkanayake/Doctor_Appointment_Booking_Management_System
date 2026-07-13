@@ -46,8 +46,10 @@ A full-stack web application that streamlines the process of booking and managin
 ---
 
 ## Project Structure
-├── backend/          # Express API server
-│   ├── prisma/       # Schema, migrations, seed
+
+```
+├── backend/                  # Express API server
+│   ├── prisma/               # Schema, migrations, seed
 │   ├── src/
 │   │   ├── controllers/
 │   │   ├── routes/
@@ -55,14 +57,15 @@ A full-stack web application that streamlines the process of booking and managin
 │   │   ├── lib/
 │   │   └── tests/
 │   └── Dockerfile
-├── frontend/         # React + Vite app
+├── frontend/                 # React + Vite app
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
 │   │   ├── layouts/
 │   │   └── tests/
 └── .github/
-└── workflows/    # CI/CD pipelines
+    └── workflows/            # CI/CD pipelines
+```
 
 ---
 
@@ -107,8 +110,9 @@ Seed the database (creates a default admin account for local development only):
 ```bash
 npx prisma db seed
 ```
-> ⚠️ **Security note:** The seed script creates a default admin account with a placeholder password defined in your local seed file / environment variables. **Change this password immediately after first login**, and never seed or expose default credentials in a production environment. Do not commit real credentials to version control or documentation.
-
+> > **Security note:** The seed script creates a default admin account.
+> Change this password immediately after first login and never expose
+> default credentials in a production environment.
 Start the development server:
 
 ```bash
@@ -178,7 +182,9 @@ feature/*     → feature branches (PR into development)
 
 - **Production:** https://medicarelk.vercel.app
 
-> Note: API documentation (Swagger) is intentionally not linked here for production/staging environments. `/api/docs` should be disabled or placed behind authentication in any publicly deployed environment to avoid exposing the full API surface to unauthenticated users.
+> > **Note:** Swagger API documentation is available at `/api/docs` in development.
+> This endpoint should be disabled or placed behind authentication before
+> deploying to any public environment.
 
 ---
 
